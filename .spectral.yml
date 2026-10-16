@@ -1,0 +1,19 @@
+# API Quality Improvement Plan - Phase 2 Active
+extends:
+  - spectral:oas
+
+# Active rules - Phase 2: enhanced quality requirements
+rules:
+  # Critical errors (must fix)
+  path-params: error              # Path parameters must be defined
+  oas3-valid-media-example: error  # Examples must be valid
+  oas3-schema: error             # Schema must be valid
+
+  # Phase 2 active warnings (now enforced)
+  operation-operationId: error   # Unique operation IDs now required
+  operation-description: error   # Operation descriptions now required
+  # Metadata requirements
+  info-contact: info             # Contact info recommended
+
+# Phase 3: Uncomment after Phase 2 quality stability
+# no-unused-references: warn    # Clean references

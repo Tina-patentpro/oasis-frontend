@@ -1,0 +1,320 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Auth API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网认证 legacy 接口定义，用于与前端登录/注册/改密联调。
+
+    - 后端路径：`/auth/*`、`/user/updatepwd`
+    - 代理后路径：`/api/auth/*`、`/api/user/updatepwd`
+    - 对应接口文档：`API接口文档-用户端.md`
+
+    重要约束：
+    - 现网后端不支持 refresh token，访问令牌过期需重新登录。
+    - 现网后端不支持双因子验证（2FA）。
+    - 目标态契约（refresh / 2FA）见 `users-auth.yaml`，已标注 `x-implemented: false`。
+    - `updatepwd` 的字段名 `newpasssword`（三个 s）和 `truepassword` 为后端历史拼写，
+      前端必须严格匹配，修改拼写会导致接口失败。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy Auth
+    description: 兼容现网认证接口
+paths:
+  /api/auth/pwdlogin:
+    post:
+      operationId: legacyPwdLogin
+      summary: 密码登录
+      description: 使用手机号 + 密码登录，返回访问令牌与用户基本信息。
+      tags:
+        - Legacy Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone:
+                  type: string
+                  description: 手机号。
+                password:
+                  type: string
+                  description: 密码（明文传输，由 HTTPS 保护）。
+            examples:
+              default:
+                summary: 密码登录请求
+                value:
+                  phone: '<手机号>'
+                  password: '<用户密码>'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyAuthLoginResponse'
+              examples:
+                success:
+                  summary: 成功示例
+                  value:
+                    code: 200
+                    msg: 成功
+                    data:
+                      id: 1
+                      username: user_1
+                      phone: '<手机号>'
+                      balance: 100.5
+                      invite_code: ABC123
+                      register_time: '2026-01-01T00:00:00'
+                      last_login_time: '2026-06-26T10:00:00'
+                      token: '<访问令牌>'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyErrorResponse'
+  /api/auth/login:
+    post:
+      operationId: legacySmsLogin
+      summary: 手机验证码登录
+      description: 使用手机号 + 短信验证码登录。
+      tags:
+        - Legacy Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, code]
+              properties:
+                phone:
+                  type: string
+                code:
+                  type: string
+                  description: 短信验证码。
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyAuthLoginResponse'
+  /api/auth/send:
+    post:
+      operationId: legacySendSmsCode
+      summary: 发送短信验证码
+      description: 向指定手机号发送登录/注册用的短信验证码。
+      tags:
+        - Legacy Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: 发送成功（无业务数据）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+        '429':
+          x-contract-scope: deferred
+          x-deferred-reason: provider-rate-limit-currently-mapped-to-http-500
+          description: 发送频率受限（目标映射；当前现网尚未实现）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyErrorResponse'
+        '500':
+          description: 现网兼容偏差：供应商业务流控被后端错误映射为 HTTP 500（待修复）
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: 现网错误包络尚未确认为稳定契约；客户端必须按失败响应处理。
+  /api/auth/register:
+    post:
+      operationId: legacyRegister
+      summary: 用户注册
+      description: 使用手机号 + 验证码 + 密码注册，可携带邀请码。
+      tags:
+        - Legacy Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, code, password]
+              properties:
+                phone:
+                  type: string
+                code:
+                  type: string
+                password:
+                  type: string
+                invite_code:
+                  type: string
+                  description: 邀请码（可选）。
+      responses:
+        '200':
+          description: 注册成功并返回登录态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyAuthLoginResponse'
+  /api/auth/logout:
+    post:
+      operationId: legacyLogout
+      summary: 用户登出
+      description: 登出当前会话，前端同时清理本地令牌。
+      tags:
+        - Legacy Auth
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/updatepwd:
+    post:
+      operationId: legacyUpdatePassword
+      summary: 修改密码
+      description: |
+        修改当前用户密码。
+
+        ⚠️ 字段名拼写为后端历史遗留，前端必须严格匹配，勿改：
+        - `newpasssword`（三个 s）
+        - `truepassword`（确认密码，字段名为"真密码"）
+      tags:
+        - Legacy Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password, newpasssword, truepassword]
+              properties:
+                password:
+                  type: string
+                  description: 原密码。
+                newpasssword:
+                  type: string
+                  description: 新密码（注意三个 s，后端历史拼写）。
+                truepassword:
+                  type: string
+                  description: 确认密码，必须与 newpasssword 一致（字段名为后端历史拼写）。
+            examples:
+              default:
+                summary: 改密请求
+                value:
+                  password: 'old_password'
+                  newpasssword: 'new_password'
+                  truepassword: 'new_password'
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+        '400':
+          description: 原密码错误或两次密码不一致
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyAuthLoginResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          description: 业务码，兼容 `0` 或 `200`。
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          required:
+            - id
+            - username
+            - phone
+            - balance
+            - invite_code
+            - register_time
+            - last_login_time
+            - token
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+            phone:
+              type: string
+            balance:
+              type: number
+            invite_code:
+              type: string
+            register_time:
+              type: string
+              description: 注册时间。
+            last_login_time:
+              type: string
+              description: 最近登录时间。
+            token:
+              type: string
+              description: 访问令牌（现网无 refresh token）。
+    LegacyVoidResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+    LegacyErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        msg:
+          type: string
+        message:
+          type: string

@@ -1,0 +1,230 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Project & Session API
+  version: '2026-09-01'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网项目管理与会话详情 legacy 接口定义（folderlist 已有独立契约文件）。
+
+    - 后端路径：`/user/user/folderupd`、`/user/user/folderarchive`、`/user/user/projectdetail`、`/user/user/workflowdelete`
+    - 代理后路径：`/api/user/user/*`
+    - 对应接口文档：`API接口文档-用户端.md`
+    - 项目列表接口 `GET /user/user/folderlist` 见 `projects-legacy-folderlist.yaml`
+    - 历史命名中的 `projectdetail` 实际返回一次工作流或对话流会话详情；项目详情使用 `folderdetail`
+
+    ⚠️ 历史遗留：以下写操作使用 GET 语义（应迁移至对应的 PATCH/POST/DELETE 语义）：
+    - folderupd（更新项目）
+    - folderarchive（归档项目）
+    - workflowdelete（删除会话；调用方必须禁用缓存和预取）
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy Projects
+    description: 兼容现网项目管理接口
+  - name: Legacy Sessions
+    description: 兼容现网会话详情接口
+paths:
+  /api/user/user/folderupd/{projectId}:
+    get:
+      operationId: legacyUpdateFolder
+      summary: 更新项目信息
+      description: |
+        更新项目名称或客户名称。
+
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 PATCH）。
+        参数通过 query string 传递。
+      tags:
+        - Legacy Projects
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: 新项目名称。
+        - name: coustomer_name
+          in: query
+          schema:
+            type: string
+          description: 客户名称（注意拼写为 coustomer，后端历史遗留）。
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/user/folderarchive/{projectId}/{archive}:
+    get:
+      operationId: legacyArchiveFolder
+      summary: 归档或恢复项目
+      description: |
+        切换项目归档状态。
+
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 PATCH）。
+      tags:
+        - Legacy Projects
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: archive
+          in: path
+          required: true
+          schema:
+            type: integer
+            enum: [0, 1]
+          description: 'archive=0 表示恢复，1 表示归档。'
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/user/projectdetail/{sessionId}:
+    get:
+      operationId: legacyGetSessionDetail
+      summary: 获取会话详情
+      description: |
+        返回一次工作流或对话流会话的输入、输出、文件及项目归属。
+        历史路径保留 `projectdetail` 命名，但资源语义是会话而非项目。
+      tags:
+        - Legacy Sessions
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacySessionDetailResponse'
+  /api/user/user/workflowdelete/{sessionId}:
+    get:
+      operationId: legacyDeleteSession
+      summary: 删除会话
+      description: |
+        删除指定工作流或对话流会话。
+
+        ⚠️ 这是历史 GET 写操作。前端调用必须设置 `cache: no-store`，不得预取；
+        后端后续应迁移到资源式 DELETE 接口。`DELETE /api/projects/{projectId}`
+        仅用于项目资源，禁止用于会话删除。
+      tags:
+        - Legacy Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 删除请求已处理
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyVoidResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data: {}
+    LegacySessionDetail:
+      type: object
+      description: legacy 工作流或对话流会话详情。
+      required: [id]
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        folder_id:
+          oneOf:
+            - type: integer
+            - type: string
+            - type: 'null'
+        name:
+          type: string
+        api_name:
+          type: string
+        inputs:
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: string
+        response:
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: string
+        answer:
+          type: string
+        answer_text:
+          type: string
+        file_output:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        file_url:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+            - type: 'null'
+        type:
+          type: integer
+          enum: [1, 2]
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    LegacySessionDetailResponse:
+      oneOf:
+        - $ref: '#/components/schemas/LegacySessionDetail'
+        - type: object
+          required: [data]
+          properties:
+            code:
+              type: integer
+              enum: [0, 200]
+            msg:
+              type: string
+            message:
+              type: string
+            data:
+              $ref: '#/components/schemas/LegacySessionDetail'

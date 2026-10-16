@@ -1,0 +1,3166 @@
+{
+  "generatedAt": "2026-06-22T13:26:07.461Z",
+  "source": {
+    "totalLines": 94220,
+    "extensionBreakdown": [
+      {
+        "extension": ".css",
+        "lines": 1400,
+        "files": 6
+      },
+      {
+        "extension": ".ts",
+        "lines": 50978,
+        "files": 408
+      },
+      {
+        "extension": ".tsx",
+        "lines": 41842,
+        "files": 214
+      }
+    ],
+    "files": [
+      {
+        "path": "src/api/client.ts",
+        "lines": 151
+      },
+      {
+        "path": "src/api/core/auth-refresh.test.ts",
+        "lines": 26
+      },
+      {
+        "path": "src/api/core/auth-refresh.ts",
+        "lines": 36
+      },
+      {
+        "path": "src/api/core/client-app-env.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/api/core/client-helpers.imports.test.ts",
+        "lines": 14
+      },
+      {
+        "path": "src/api/core/client-helpers.ts",
+        "lines": 287
+      },
+      {
+        "path": "src/api/core/client-helpers.upload.test.ts",
+        "lines": 47
+      },
+      {
+        "path": "src/api/core/error-utils.ts",
+        "lines": 70
+      },
+      {
+        "path": "src/api/core/request-policy.test.ts",
+        "lines": 19
+      },
+      {
+        "path": "src/api/core/request-policy.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/api/core/request-timeout.test.ts",
+        "lines": 19
+      },
+      {
+        "path": "src/api/core/request-timeout.ts",
+        "lines": 58
+      },
+      {
+        "path": "src/api/core/response-guards.ts",
+        "lines": 42
+      },
+      {
+        "path": "src/api/core/response-parser.test.ts",
+        "lines": 62
+      },
+      {
+        "path": "src/api/core/response-parser.ts",
+        "lines": 90
+      },
+      {
+        "path": "src/api/core/retry-policy.ts",
+        "lines": 71
+      },
+      {
+        "path": "src/api/core/session-routes.ts",
+        "lines": 11
+      },
+      {
+        "path": "src/api/core/token-storage.test.ts",
+        "lines": 119
+      },
+      {
+        "path": "src/api/core/token-storage.ts",
+        "lines": 228
+      },
+      {
+        "path": "src/api/core/types.ts",
+        "lines": 25
+      },
+      {
+        "path": "src/api/errorMapping.ts",
+        "lines": 127
+      },
+      {
+        "path": "src/api/errors.ts",
+        "lines": 83
+      },
+      {
+        "path": "src/api/index.ts",
+        "lines": 8
+      },
+      {
+        "path": "src/api/sdk/workflows.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/api/services/ai.service.config.ts",
+        "lines": 19
+      },
+      {
+        "path": "src/api/services/ai.service.createWithApi.test.ts",
+        "lines": 505
+      },
+      {
+        "path": "src/api/services/ai.service.createWithApi.text-fallback.test.ts",
+        "lines": 93
+      },
+      {
+        "path": "src/api/services/ai.service.process-status.test.ts",
+        "lines": 249
+      },
+      {
+        "path": "src/api/services/ai.service.sendChat.test.ts",
+        "lines": 85
+      },
+      {
+        "path": "src/api/services/ai.service.ts",
+        "lines": 861
+      },
+      {
+        "path": "src/api/services/ai.service.uploadFile.test.ts",
+        "lines": 77
+      },
+      {
+        "path": "src/api/services/ai.service.workflow-list.test.ts",
+        "lines": 95
+      },
+      {
+        "path": "src/api/services/auth.service.test.ts",
+        "lines": 47
+      },
+      {
+        "path": "src/api/services/auth.service.ts",
+        "lines": 273
+      },
+      {
+        "path": "src/api/services/billing.service.ts",
+        "lines": 136
+      },
+      {
+        "path": "src/api/services/cms.service.configdetail.test.ts",
+        "lines": 44
+      },
+      {
+        "path": "src/api/services/cms.service.customer-service.test.ts",
+        "lines": 28
+      },
+      {
+        "path": "src/api/services/cms.service.ts",
+        "lines": 458
+      },
+      {
+        "path": "src/api/services/file.service.ts",
+        "lines": 100
+      },
+      {
+        "path": "src/api/services/history.service.test.ts",
+        "lines": 52
+      },
+      {
+        "path": "src/api/services/history.service.ts",
+        "lines": 267
+      },
+      {
+        "path": "src/api/services/index.ts",
+        "lines": 40
+      },
+      {
+        "path": "src/api/services/instruction.service.ts",
+        "lines": 147
+      },
+      {
+        "path": "src/api/services/notification.service.test.ts",
+        "lines": 68
+      },
+      {
+        "path": "src/api/services/notification.service.ts",
+        "lines": 244
+      },
+      {
+        "path": "src/api/services/project-service-normalizers.test.ts",
+        "lines": 157
+      },
+      {
+        "path": "src/api/services/project-service-normalizers.ts",
+        "lines": 233
+      },
+      {
+        "path": "src/api/services/project-service-selectors.test.ts",
+        "lines": 161
+      },
+      {
+        "path": "src/api/services/project-service-selectors.ts",
+        "lines": 106
+      },
+      {
+        "path": "src/api/services/project.service.test.ts",
+        "lines": 152
+      },
+      {
+        "path": "src/api/services/project.service.ts",
+        "lines": 678
+      },
+      {
+        "path": "src/api/services/referral.service.ts",
+        "lines": 58
+      },
+      {
+        "path": "src/api/services/session.service.ts",
+        "lines": 753
+      },
+      {
+        "path": "src/api/services/statistics.service.ts",
+        "lines": 115
+      },
+      {
+        "path": "src/api/services/user.service.ts",
+        "lines": 210
+      },
+      {
+        "path": "src/api/services/__tests__/auth.service.test.ts",
+        "lines": 285
+      },
+      {
+        "path": "src/api/services/__tests__/billing.service.test.ts",
+        "lines": 329
+      },
+      {
+        "path": "src/api/validation.test.ts",
+        "lines": 41
+      },
+      {
+        "path": "src/api/validation.ts",
+        "lines": 42
+      },
+      {
+        "path": "src/app/App.tsx",
+        "lines": 60
+      },
+      {
+        "path": "src/app/favicon-link.test.ts",
+        "lines": 15
+      },
+      {
+        "path": "src/app/loaders.ts",
+        "lines": 65
+      },
+      {
+        "path": "src/app/providers/AppProviders.tsx",
+        "lines": 42
+      },
+      {
+        "path": "src/app/providers/AuthProvider.tsx",
+        "lines": 29
+      },
+      {
+        "path": "src/app/providers/BackgroundTaskPoller.test.tsx",
+        "lines": 192
+      },
+      {
+        "path": "src/app/providers/BackgroundTaskPoller.tsx",
+        "lines": 213
+      },
+      {
+        "path": "src/app/providers/LayoutProvider.tsx",
+        "lines": 146
+      },
+      {
+        "path": "src/app/providers/NotificationProvider.test.tsx",
+        "lines": 304
+      },
+      {
+        "path": "src/app/providers/NotificationProvider.tsx",
+        "lines": 280
+      },
+      {
+        "path": "src/app/providers/ThemeProvider.tsx",
+        "lines": 30
+      },
+      {
+        "path": "src/app/routes/ProtectedRoute.tsx",
+        "lines": 35
+      },
+      {
+        "path": "src/App.tsx",
+        "lines": 2
+      },
+      {
+        "path": "src/components/AssociateProjectDialog.test.tsx",
+        "lines": 220
+      },
+      {
+        "path": "src/components/AssociateProjectDialog.tsx",
+        "lines": 163
+      },
+      {
+        "path": "src/components/auth/AuthPolicyNotice.tsx",
+        "lines": 22
+      },
+      {
+        "path": "src/components/auth/hooks/useSmsCode.ts",
+        "lines": 101
+      },
+      {
+        "path": "src/components/auth/LoginForm.test.tsx",
+        "lines": 67
+      },
+      {
+        "path": "src/components/auth/LoginForm.tsx",
+        "lines": 423
+      },
+      {
+        "path": "src/components/auth/RegisterForm.test.tsx",
+        "lines": 76
+      },
+      {
+        "path": "src/components/auth/RegisterForm.tsx",
+        "lines": 327
+      },
+      {
+        "path": "src/components/auth/ResetPasswordDialog.test.tsx",
+        "lines": 24
+      },
+      {
+        "path": "src/components/auth/ResetPasswordDialog.tsx",
+        "lines": 48
+      },
+      {
+        "path": "src/components/auth/SessionExpiredDialog.test.tsx",
+        "lines": 54
+      },
+      {
+        "path": "src/components/auth/SessionExpiredDialog.tsx",
+        "lines": 93
+      },
+      {
+        "path": "src/components/auth/SessionExpiryBanner.test.tsx",
+        "lines": 87
+      },
+      {
+        "path": "src/components/auth/SessionExpiryBanner.tsx",
+        "lines": 91
+      },
+      {
+        "path": "src/components/chat/AttachmentBar.responsive.test.tsx",
+        "lines": 376
+      },
+      {
+        "path": "src/components/chat/AttachmentBar.test.tsx",
+        "lines": 258
+      },
+      {
+        "path": "src/components/chat/AttachmentBar.tsx",
+        "lines": 156
+      },
+      {
+        "path": "src/components/chat/AttachmentUploadFlow.test.tsx",
+        "lines": 152
+      },
+      {
+        "path": "src/components/chat/ChatConversationPane.test.tsx",
+        "lines": 174
+      },
+      {
+        "path": "src/components/chat/ChatConversationPane.tsx",
+        "lines": 388
+      },
+      {
+        "path": "src/components/chat/ChatMessageItem.test.tsx",
+        "lines": 158
+      },
+      {
+        "path": "src/components/chat/ChatMessageItem.tsx",
+        "lines": 240
+      },
+      {
+        "path": "src/components/chat/ConfirmationDialog.test.tsx",
+        "lines": 79
+      },
+      {
+        "path": "src/components/chat/ConfirmationDialog.tsx",
+        "lines": 127
+      },
+      {
+        "path": "src/components/chat/EmptyChatState.test.tsx",
+        "lines": 57
+      },
+      {
+        "path": "src/components/chat/EmptyChatState.tsx",
+        "lines": 109
+      },
+      {
+        "path": "src/components/chat/hooks/instruction-library-config.ts",
+        "lines": 143
+      },
+      {
+        "path": "src/components/chat/hooks/instruction-library-types.ts",
+        "lines": 15
+      },
+      {
+        "path": "src/components/chat/hooks/useChatExport.ts",
+        "lines": 70
+      },
+      {
+        "path": "src/components/chat/hooks/useChatFileUpload.test.tsx",
+        "lines": 298
+      },
+      {
+        "path": "src/components/chat/hooks/useChatFileUpload.ts",
+        "lines": 292
+      },
+      {
+        "path": "src/components/chat/hooks/useChatSearch.test.tsx",
+        "lines": 33
+      },
+      {
+        "path": "src/components/chat/hooks/useChatSearch.ts",
+        "lines": 125
+      },
+      {
+        "path": "src/components/chat/hooks/useInstructionDeleteConfirmation.ts",
+        "lines": 20
+      },
+      {
+        "path": "src/components/chat/hooks/useInstructionLibrary.test.tsx",
+        "lines": 483
+      },
+      {
+        "path": "src/components/chat/hooks/useInstructionLibrary.ts",
+        "lines": 432
+      },
+      {
+        "path": "src/components/chat/hooks/useInstructionPanelFocus.ts",
+        "lines": 39
+      },
+      {
+        "path": "src/components/chat/hooks/useReadMenu.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/components/chat/InstructionLibraryPanel.test.tsx",
+        "lines": 281
+      },
+      {
+        "path": "src/components/chat/InstructionLibraryPanel.tsx",
+        "lines": 497
+      },
+      {
+        "path": "src/components/chat/ReadMenu.test.tsx",
+        "lines": 185
+      },
+      {
+        "path": "src/components/chat/ReadMenu.tsx",
+        "lines": 161
+      },
+      {
+        "path": "src/components/chat/TypingIndicator.tsx",
+        "lines": 38
+      },
+      {
+        "path": "src/components/ChatPanel.message-actions.test.tsx",
+        "lines": 419
+      },
+      {
+        "path": "src/components/ChatPanel.overlays.test.tsx",
+        "lines": 423
+      },
+      {
+        "path": "src/components/ChatPanel.test.tsx",
+        "lines": 1089
+      },
+      {
+        "path": "src/components/ChatPanel.tsx",
+        "lines": 1417
+      },
+      {
+        "path": "src/components/ContentRenderer/content-url-transform.test.ts",
+        "lines": 59
+      },
+      {
+        "path": "src/components/ContentRenderer/content-url-transform.ts",
+        "lines": 53
+      },
+      {
+        "path": "src/components/ContentRenderer/index.test.tsx",
+        "lines": 346
+      },
+      {
+        "path": "src/components/ContentRenderer/index.tsx",
+        "lines": 381
+      },
+      {
+        "path": "src/components/ContentRenderer/math-delimiters.test.ts",
+        "lines": 40
+      },
+      {
+        "path": "src/components/ContentRenderer/math-delimiters.ts",
+        "lines": 64
+      },
+      {
+        "path": "src/components/ContentRenderer/mermaid-blocks.test.ts",
+        "lines": 233
+      },
+      {
+        "path": "src/components/ContentRenderer/mermaid-blocks.ts",
+        "lines": 188
+      },
+      {
+        "path": "src/components/ContentRenderer/mermaid-chunk-boundary.test.tsx",
+        "lines": 84
+      },
+      {
+        "path": "src/components/ContentRenderer/MermaidChart.test.tsx",
+        "lines": 53
+      },
+      {
+        "path": "src/components/ContentRenderer/MermaidChart.tsx",
+        "lines": 252
+      },
+      {
+        "path": "src/components/ContentRenderer/oasis-actions.test.ts",
+        "lines": 305
+      },
+      {
+        "path": "src/components/ContentRenderer/oasis-actions.ts",
+        "lines": 243
+      },
+      {
+        "path": "src/components/ContentRenderer/OasisActionsBlock.test.tsx",
+        "lines": 174
+      },
+      {
+        "path": "src/components/ContentRenderer/OasisActionsBlock.tsx",
+        "lines": 107
+      },
+      {
+        "path": "src/components/ContentRenderer/rendering-pipeline.integration.test.ts",
+        "lines": 20
+      },
+      {
+        "path": "src/components/ContentRenderer/sanitize-schema.test.ts",
+        "lines": 18
+      },
+      {
+        "path": "src/components/ContentRenderer/sanitize-schema.ts",
+        "lines": 89
+      },
+      {
+        "path": "src/components/ContentRenderer/styles.css",
+        "lines": 666
+      },
+      {
+        "path": "src/components/ContentRenderer/styles.table-layout.test.ts",
+        "lines": 38
+      },
+      {
+        "path": "src/components/ContentRenderer/__fixtures__/oasis-actions.mock.ts",
+        "lines": 217
+      },
+      {
+        "path": "src/components/customer-service/sections/WeChatSupportPanel.test.tsx",
+        "lines": 30
+      },
+      {
+        "path": "src/components/customer-service/sections/WeChatSupportPanel.tsx",
+        "lines": 59
+      },
+      {
+        "path": "src/components/CustomerServiceDialog.test.tsx",
+        "lines": 20
+      },
+      {
+        "path": "src/components/CustomerServiceDialog.tsx",
+        "lines": 74
+      },
+      {
+        "path": "src/components/DownloadFilesDialog.tsx",
+        "lines": 923
+      },
+      {
+        "path": "src/components/EditProjectDialog.test.tsx",
+        "lines": 88
+      },
+      {
+        "path": "src/components/EditProjectDialog.tsx",
+        "lines": 399
+      },
+      {
+        "path": "src/components/error-boundaries/AsyncBoundary.tsx",
+        "lines": 3
+      },
+      {
+        "path": "src/components/error-boundaries/ComponentErrorBoundary.tsx",
+        "lines": 176
+      },
+      {
+        "path": "src/components/error-boundaries/index.ts",
+        "lines": 8
+      },
+      {
+        "path": "src/components/error-boundaries/PageErrorBoundary.tsx",
+        "lines": 150
+      },
+      {
+        "path": "src/components/error-boundaries/types.test.ts",
+        "lines": 16
+      },
+      {
+        "path": "src/components/error-boundaries/types.ts",
+        "lines": 77
+      },
+      {
+        "path": "src/components/ErrorBoundary.tsx",
+        "lines": 65
+      },
+      {
+        "path": "src/components/HelpDocumentation.test.tsx",
+        "lines": 99
+      },
+      {
+        "path": "src/components/HelpDocumentation.tsx",
+        "lines": 428
+      },
+      {
+        "path": "src/components/HistoryDataDialog.test.tsx",
+        "lines": 242
+      },
+      {
+        "path": "src/components/HistoryDataDialog.tsx",
+        "lines": 438
+      },
+      {
+        "path": "src/components/layout/GlobalLayout.tsx",
+        "lines": 38
+      },
+      {
+        "path": "src/components/LazyLoader.tsx",
+        "lines": 27
+      },
+      {
+        "path": "src/components/LocalHistoryFilesDialog.tsx",
+        "lines": 351
+      },
+      {
+        "path": "src/components/NotificationCenter.test.tsx",
+        "lines": 292
+      },
+      {
+        "path": "src/components/NotificationCenter.tsx",
+        "lines": 421
+      },
+      {
+        "path": "src/components/QuickCreateProjectDialog.test.tsx",
+        "lines": 38
+      },
+      {
+        "path": "src/components/QuickCreateProjectDialog.tsx",
+        "lines": 196
+      },
+      {
+        "path": "src/components/RechargeDialog.test.tsx",
+        "lines": 130
+      },
+      {
+        "path": "src/components/RechargeDialog.tsx",
+        "lines": 337
+      },
+      {
+        "path": "src/components/ReleaseNotesDialog.tsx",
+        "lines": 133
+      },
+      {
+        "path": "src/components/RewardSuggestionDialog.test.tsx",
+        "lines": 169
+      },
+      {
+        "path": "src/components/RewardSuggestionDialog.tsx",
+        "lines": 397
+      },
+      {
+        "path": "src/components/settings/common/SettingsModal.tsx",
+        "lines": 33
+      },
+      {
+        "path": "src/components/settings/common/SettingsSectionHeader.tsx",
+        "lines": 19
+      },
+      {
+        "path": "src/components/settings/common/SettingsSidebar.test.tsx",
+        "lines": 44
+      },
+      {
+        "path": "src/components/settings/common/SettingsSidebar.tsx",
+        "lines": 63
+      },
+      {
+        "path": "src/components/settings/constants.ts",
+        "lines": 24
+      },
+      {
+        "path": "src/components/settings/hooks/settings-panel/helpers.ts",
+        "lines": 14
+      },
+      {
+        "path": "src/components/settings/hooks/settings-panel/types.ts",
+        "lines": 82
+      },
+      {
+        "path": "src/components/settings/hooks/settings-panel/useExportDialogState.ts",
+        "lines": 128
+      },
+      {
+        "path": "src/components/settings/hooks/settings-panel/useProfileReferralState.ts",
+        "lines": 147
+      },
+      {
+        "path": "src/components/settings/hooks/useSettingsPanelState.test.tsx",
+        "lines": 333
+      },
+      {
+        "path": "src/components/settings/hooks/useSettingsPanelState.ts",
+        "lines": 332
+      },
+      {
+        "path": "src/components/settings/loadWorkflowExportItems.test.ts",
+        "lines": 66
+      },
+      {
+        "path": "src/components/settings/loadWorkflowExportItems.ts",
+        "lines": 91
+      },
+      {
+        "path": "src/components/settings/sections/BalanceSettingsSection.test.tsx",
+        "lines": 208
+      },
+      {
+        "path": "src/components/settings/sections/BalanceSettingsSection.tsx",
+        "lines": 479
+      },
+      {
+        "path": "src/components/settings/sections/DataManagementSection.test.tsx",
+        "lines": 36
+      },
+      {
+        "path": "src/components/settings/sections/DataManagementSection.tsx",
+        "lines": 104
+      },
+      {
+        "path": "src/components/settings/sections/model-preference/panels.test.tsx",
+        "lines": 89
+      },
+      {
+        "path": "src/components/settings/sections/model-preference/panels.tsx",
+        "lines": 273
+      },
+      {
+        "path": "src/components/settings/sections/model-preference/transform.ts",
+        "lines": 67
+      },
+      {
+        "path": "src/components/settings/sections/model-preference/types.ts",
+        "lines": 22
+      },
+      {
+        "path": "src/components/settings/sections/ModelPreferenceSection.tsx",
+        "lines": 298
+      },
+      {
+        "path": "src/components/settings/sections/profile/PasswordCard.tsx",
+        "lines": 155
+      },
+      {
+        "path": "src/components/settings/sections/profile/ProfileFeedback.test.tsx",
+        "lines": 71
+      },
+      {
+        "path": "src/components/settings/sections/profile/ProfileInfoCard.tsx",
+        "lines": 177
+      },
+      {
+        "path": "src/components/settings/sections/profile/ReferralRewardCard.tsx",
+        "lines": 176
+      },
+      {
+        "path": "src/components/settings/sections/profile/types.ts",
+        "lines": 28
+      },
+      {
+        "path": "src/components/settings/sections/ProfileSettingsSection.tsx",
+        "lines": 211
+      },
+      {
+        "path": "src/components/settings/sections/RechargeRecordSection.tsx",
+        "lines": 149
+      },
+      {
+        "path": "src/components/settings/sections/RecordFeedback.test.tsx",
+        "lines": 67
+      },
+      {
+        "path": "src/components/settings/sections/RunningWaterSection.tsx",
+        "lines": 181
+      },
+      {
+        "path": "src/components/settings/sections/UsageSettingsSection.tsx",
+        "lines": 176
+      },
+      {
+        "path": "src/components/settings/WeChatPayDialog.test.tsx",
+        "lines": 49
+      },
+      {
+        "path": "src/components/settings/WeChatPayDialog.tsx",
+        "lines": 305
+      },
+      {
+        "path": "src/components/SettingsPanel.test.tsx",
+        "lines": 165
+      },
+      {
+        "path": "src/components/SettingsPanel.tsx",
+        "lines": 428
+      },
+      {
+        "path": "src/components/shared/index.ts",
+        "lines": 6
+      },
+      {
+        "path": "src/components/shared/marketing/index.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/components/shared/marketing/MarketingCard.tsx",
+        "lines": 61
+      },
+      {
+        "path": "src/components/shared/marketing/MarketingNumberBadge.tsx",
+        "lines": 20
+      },
+      {
+        "path": "src/components/shared/PageHeader.tsx",
+        "lines": 71
+      },
+      {
+        "path": "src/components/shared/PlaceholderCard.tsx",
+        "lines": 40
+      },
+      {
+        "path": "src/components/shared/StatCard.tsx",
+        "lines": 86
+      },
+      {
+        "path": "src/components/ui/badges/AttachBadge.test.tsx",
+        "lines": 63
+      },
+      {
+        "path": "src/components/ui/badges/AttachBadge.tsx",
+        "lines": 63
+      },
+      {
+        "path": "src/components/ui/buttons/ActionButton.test.tsx",
+        "lines": 41
+      },
+      {
+        "path": "src/components/ui/buttons/ActionButton.tsx",
+        "lines": 103
+      },
+      {
+        "path": "src/components/ui/ConfirmDialog.tsx",
+        "lines": 2
+      },
+      {
+        "path": "src/components/ui/data-display/Diff.tsx",
+        "lines": 37
+      },
+      {
+        "path": "src/components/ui/data-display/Step.tsx",
+        "lines": 36
+      },
+      {
+        "path": "src/components/ui/data-display/VirtualList.tsx",
+        "lines": 63
+      },
+      {
+        "path": "src/components/ui/Diff.tsx",
+        "lines": 37
+      },
+      {
+        "path": "src/components/ui/feedback/AccessibleDialog.test.tsx",
+        "lines": 149
+      },
+      {
+        "path": "src/components/ui/feedback/AccessibleDialog.tsx",
+        "lines": 180
+      },
+      {
+        "path": "src/components/ui/feedback/ConfirmDialog.test.tsx",
+        "lines": 91
+      },
+      {
+        "path": "src/components/ui/feedback/ConfirmDialog.tsx",
+        "lines": 74
+      },
+      {
+        "path": "src/components/ui/feedback/LoadingSpinner.tsx",
+        "lines": 24
+      },
+      {
+        "path": "src/components/ui/feedback/Skeleton.tsx",
+        "lines": 81
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadActions.tsx",
+        "lines": 57
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadDropzone.tsx",
+        "lines": 62
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadHint.tsx",
+        "lines": 28
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadMessages.tsx",
+        "lines": 56
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadProgressPanel.tsx",
+        "lines": 99
+      },
+      {
+        "path": "src/components/ui/file-upload/FileUploadSubmitAction.tsx",
+        "lines": 46
+      },
+      {
+        "path": "src/components/ui/file-upload/types.ts",
+        "lines": 49
+      },
+      {
+        "path": "src/components/ui/file-upload/validation.ts",
+        "lines": 128
+      },
+      {
+        "path": "src/components/ui/file-upload/view-state.ts",
+        "lines": 188
+      },
+      {
+        "path": "src/components/ui/file-upload/__tests__/validation.test.ts",
+        "lines": 66
+      },
+      {
+        "path": "src/components/ui/file-upload/__tests__/view-state.test.ts",
+        "lines": 105
+      },
+      {
+        "path": "src/components/ui/FileUpload.tsx",
+        "lines": 214
+      },
+      {
+        "path": "src/components/ui/index.ts",
+        "lines": 11
+      },
+      {
+        "path": "src/components/ui/LoadingFallback.tsx",
+        "lines": 12
+      },
+      {
+        "path": "src/components/ui/Pagination.tsx",
+        "lines": 177
+      },
+      {
+        "path": "src/components/ui/SearchInput.tsx",
+        "lines": 165
+      },
+      {
+        "path": "src/components/ui/Skeleton.tsx",
+        "lines": 81
+      },
+      {
+        "path": "src/components/ui/Step.tsx",
+        "lines": 36
+      },
+      {
+        "path": "src/components/ui/tooltip/positioning.ts",
+        "lines": 205
+      },
+      {
+        "path": "src/components/ui/tooltip/styles.ts",
+        "lines": 98
+      },
+      {
+        "path": "src/components/ui/tooltip/TooltipBubble.tsx",
+        "lines": 54
+      },
+      {
+        "path": "src/components/ui/tooltip/types.ts",
+        "lines": 51
+      },
+      {
+        "path": "src/components/ui/Tooltip.tsx",
+        "lines": 229
+      },
+      {
+        "path": "src/components/ui/VirtualList.tsx",
+        "lines": 63
+      },
+      {
+        "path": "src/components/ui/__tests__/FileUpload.test.ts",
+        "lines": 369
+      },
+      {
+        "path": "src/components/ui/__tests__/Pagination.test.tsx",
+        "lines": 62
+      },
+      {
+        "path": "src/components/ui/__tests__/SearchInput.test.tsx",
+        "lines": 37
+      },
+      {
+        "path": "src/components/workspace/AsyncTaskDaemon.tsx",
+        "lines": 236
+      },
+      {
+        "path": "src/components/workspace/index.ts",
+        "lines": 10
+      },
+      {
+        "path": "src/components/workspace/input-section/a11y.ts",
+        "lines": 8
+      },
+      {
+        "path": "src/components/workspace/input-section/InputSectionActions.test.tsx",
+        "lines": 111
+      },
+      {
+        "path": "src/components/workspace/input-section/InputSectionActions.tsx",
+        "lines": 143
+      },
+      {
+        "path": "src/components/workspace/input-section/InputSectionHeader.test.tsx",
+        "lines": 214
+      },
+      {
+        "path": "src/components/workspace/input-section/InputSectionHeader.tsx",
+        "lines": 207
+      },
+      {
+        "path": "src/components/workspace/input-section/priority.test.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/components/workspace/input-section/priority.ts",
+        "lines": 17
+      },
+      {
+        "path": "src/components/workspace/input-section/TextInputPanel.test.tsx",
+        "lines": 46
+      },
+      {
+        "path": "src/components/workspace/input-section/TextInputPanel.tsx",
+        "lines": 258
+      },
+      {
+        "path": "src/components/workspace/input-section/types.ts",
+        "lines": 83
+      },
+      {
+        "path": "src/components/workspace/InputSection.test.tsx",
+        "lines": 324
+      },
+      {
+        "path": "src/components/workspace/InputSection.tsx",
+        "lines": 517
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/index.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/LeftSidebar.test.tsx",
+        "lines": 258
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/LeftSidebar.tsx",
+        "lines": 524
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/management/ProjectCard.test.tsx",
+        "lines": 509
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/management/ProjectCard.tsx",
+        "lines": 481
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/management/ProjectDragHandle.tsx",
+        "lines": 53
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/management/tabs.tsx",
+        "lines": 486
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/management/useProjectManagementState.ts",
+        "lines": 251
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/ManagementSection.tsx",
+        "lines": 216
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/menu-keyboard.ts",
+        "lines": 35
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/ToolGroupSection.test.tsx",
+        "lines": 101
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/ToolGroupSection.tsx",
+        "lines": 410
+      },
+      {
+        "path": "src/components/workspace/left-sidebar/types.ts",
+        "lines": 182
+      },
+      {
+        "path": "src/components/workspace/navigation/AsyncTaskMenu.status.test.tsx",
+        "lines": 307
+      },
+      {
+        "path": "src/components/workspace/navigation/AsyncTaskMenu.test.tsx",
+        "lines": 210
+      },
+      {
+        "path": "src/components/workspace/navigation/AsyncTaskMenu.tsx",
+        "lines": 320
+      },
+      {
+        "path": "src/components/workspace/navigation/ChatModeSwitch.tsx",
+        "lines": 94
+      },
+      {
+        "path": "src/components/workspace/navigation/index.ts",
+        "lines": 8
+      },
+      {
+        "path": "src/components/workspace/navigation/styles.ts",
+        "lines": 49
+      },
+      {
+        "path": "src/components/workspace/navigation/types.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/components/workspace/navigation/useNavigationBarState.ts",
+        "lines": 109
+      },
+      {
+        "path": "src/components/workspace/navigation/UserMenuPanel.test.tsx",
+        "lines": 227
+      },
+      {
+        "path": "src/components/workspace/navigation/UserMenuPanel.tsx",
+        "lines": 461
+      },
+      {
+        "path": "src/components/workspace/NavigationBar.release-notes.test.tsx",
+        "lines": 293
+      },
+      {
+        "path": "src/components/workspace/NavigationBar.test.tsx",
+        "lines": 333
+      },
+      {
+        "path": "src/components/workspace/NavigationBar.tsx",
+        "lines": 253
+      },
+      {
+        "path": "src/components/workspace/output-section/OutputSectionHeader.tsx",
+        "lines": 256
+      },
+      {
+        "path": "src/components/workspace/output-section/render-mode-menu-keyboard.ts",
+        "lines": 42
+      },
+      {
+        "path": "src/components/workspace/OutputSection.test.tsx",
+        "lines": 271
+      },
+      {
+        "path": "src/components/workspace/OutputSection.tsx",
+        "lines": 351
+      },
+      {
+        "path": "src/components/__tests__/DownloadFilesDialog.test.tsx",
+        "lines": 662
+      },
+      {
+        "path": "src/components/__tests__/LocalHistoryFilesDialog.test.tsx",
+        "lines": 185
+      },
+      {
+        "path": "src/config/aliyun.ts",
+        "lines": 34
+      },
+      {
+        "path": "src/config/attachmentFormats.ts",
+        "lines": 21
+      },
+      {
+        "path": "src/config/runtime-env.ts",
+        "lines": 10
+      },
+      {
+        "path": "src/config/security.test.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/config/security.ts",
+        "lines": 38
+      },
+      {
+        "path": "src/constants/appMeta.test.ts",
+        "lines": 56
+      },
+      {
+        "path": "src/constants/appMeta.ts",
+        "lines": 16
+      },
+      {
+        "path": "src/constants/chatUpload.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/constants/index.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/constants/menus.ts",
+        "lines": 10
+      },
+      {
+        "path": "src/constants/projectFields.ts",
+        "lines": 149
+      },
+      {
+        "path": "src/constants/rechargePackages.ts",
+        "lines": 44
+      },
+      {
+        "path": "src/constants/tabs.ts",
+        "lines": 97
+      },
+      {
+        "path": "src/constants/themes.test.ts",
+        "lines": 35
+      },
+      {
+        "path": "src/constants/themes.ts",
+        "lines": 18
+      },
+      {
+        "path": "src/constants/workflowSteps.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/env.d.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/hooks/chat-management/chatflow-response.ts",
+        "lines": 60
+      },
+      {
+        "path": "src/hooks/chat-management/message-format.test.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/hooks/chat-management/message-format.ts",
+        "lines": 78
+      },
+      {
+        "path": "src/hooks/chat-management/presets.ts",
+        "lines": 84
+      },
+      {
+        "path": "src/hooks/chat-management/request-snapshot.ts",
+        "lines": 58
+      },
+      {
+        "path": "src/hooks/chat-management/session-detail.ts",
+        "lines": 51
+      },
+      {
+        "path": "src/hooks/chat-management/types.ts",
+        "lines": 28
+      },
+      {
+        "path": "src/hooks/chat-management/upload-chat-attachments.test.ts",
+        "lines": 76
+      },
+      {
+        "path": "src/hooks/chat-management/upload-chat-attachments.ts",
+        "lines": 75
+      },
+      {
+        "path": "src/hooks/chat-management/use-chat-request-actions.ts",
+        "lines": 330
+      },
+      {
+        "path": "src/hooks/chat-management/use-chat-request-state.ts",
+        "lines": 74
+      },
+      {
+        "path": "src/hooks/chat-management/use-chatflow-prompts.ts",
+        "lines": 43
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/constants.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/index.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/selectors.test.ts",
+        "lines": 69
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/selectors.ts",
+        "lines": 38
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/transformers.ts",
+        "lines": 130
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/types.ts",
+        "lines": 45
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/useCategoriesData.ts",
+        "lines": 188
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/useDynamicTabs.ts",
+        "lines": 125
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/useStaticTabs.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/useToolMetadata.ts",
+        "lines": 50
+      },
+      {
+        "path": "src/hooks/dynamic-tabs/useWorkflowSteps.ts",
+        "lines": 78
+      },
+      {
+        "path": "src/hooks/index.ts",
+        "lines": 16
+      },
+      {
+        "path": "src/hooks/notification-task-sync.test.ts",
+        "lines": 130
+      },
+      {
+        "path": "src/hooks/notification-task-sync.ts",
+        "lines": 116
+      },
+      {
+        "path": "src/hooks/useAPI.ts",
+        "lines": 95
+      },
+      {
+        "path": "src/hooks/useAsyncCleanup.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/hooks/useAsyncState.ts",
+        "lines": 268
+      },
+      {
+        "path": "src/hooks/useAsyncTaskPolling.test.ts",
+        "lines": 222
+      },
+      {
+        "path": "src/hooks/useAsyncTaskPolling.ts",
+        "lines": 275
+      },
+      {
+        "path": "src/hooks/useChatManagement.attachments.test.tsx",
+        "lines": 70
+      },
+      {
+        "path": "src/hooks/useChatManagement.project.test.tsx",
+        "lines": 253
+      },
+      {
+        "path": "src/hooks/useChatManagement.prompts.test.tsx",
+        "lines": 36
+      },
+      {
+        "path": "src/hooks/useChatManagement.regenerate-context.test.tsx",
+        "lines": 271
+      },
+      {
+        "path": "src/hooks/useChatManagement.regenerate.test.tsx",
+        "lines": 403
+      },
+      {
+        "path": "src/hooks/useChatManagement.send-session.test.tsx",
+        "lines": 409
+      },
+      {
+        "path": "src/hooks/useChatManagement.send.test.tsx",
+        "lines": 593
+      },
+      {
+        "path": "src/hooks/useChatManagement.test.tsx",
+        "lines": 477
+      },
+      {
+        "path": "src/hooks/useChatManagement.ts",
+        "lines": 541
+      },
+      {
+        "path": "src/hooks/useClickOutside.ts",
+        "lines": 45
+      },
+      {
+        "path": "src/hooks/useDynamicTabs.ts",
+        "lines": 2
+      },
+      {
+        "path": "src/hooks/useFileUpload.ts",
+        "lines": 57
+      },
+      {
+        "path": "src/hooks/useFocusTrap.ts",
+        "lines": 127
+      },
+      {
+        "path": "src/hooks/useKeyboardShortcut.ts",
+        "lines": 39
+      },
+      {
+        "path": "src/hooks/useLayoutManagement.test.tsx",
+        "lines": 120
+      },
+      {
+        "path": "src/hooks/useLayoutManagement.ts",
+        "lines": 168
+      },
+      {
+        "path": "src/hooks/useNotifications.ts",
+        "lines": 366
+      },
+      {
+        "path": "src/hooks/useOptimisticUpdate.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/hooks/usePagination.ts",
+        "lines": 162
+      },
+      {
+        "path": "src/hooks/useProjectDetail.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/hooks/useProjects.ts",
+        "lines": 175
+      },
+      {
+        "path": "src/hooks/useSessionManagement.test.tsx",
+        "lines": 118
+      },
+      {
+        "path": "src/hooks/useSessionManagement.ts",
+        "lines": 306
+      },
+      {
+        "path": "src/hooks/useSessions.ts",
+        "lines": 3
+      },
+      {
+        "path": "src/hooks/__tests__/useAPI.test.ts",
+        "lines": 281
+      },
+      {
+        "path": "src/hooks/__tests__/useAsyncState.test.ts",
+        "lines": 402
+      },
+      {
+        "path": "src/hooks/__tests__/useChatManagement.test-utils.tsx",
+        "lines": 71
+      },
+      {
+        "path": "src/index.css",
+        "lines": 362
+      },
+      {
+        "path": "src/main.tsx",
+        "lines": 22
+      },
+      {
+        "path": "src/modules/index.ts",
+        "lines": 2
+      },
+      {
+        "path": "src/modules/workspace/async-task-polling-policy.ts",
+        "lines": 47
+      },
+      {
+        "path": "src/modules/workspace/components/LazyDialogBoundary.test.tsx",
+        "lines": 29
+      },
+      {
+        "path": "src/modules/workspace/components/LazyDialogBoundary.tsx",
+        "lines": 50
+      },
+      {
+        "path": "src/modules/workspace/components/WorkspaceMainLayout.tsx",
+        "lines": 101
+      },
+      {
+        "path": "src/modules/workspace/components/WorkspaceRightPanel.test.tsx",
+        "lines": 177
+      },
+      {
+        "path": "src/modules/workspace/components/WorkspaceRightPanel.tsx",
+        "lines": 111
+      },
+      {
+        "path": "src/modules/workspace/errors/recovery-model.test.ts",
+        "lines": 18
+      },
+      {
+        "path": "src/modules/workspace/errors/recovery-model.ts",
+        "lines": 55
+      },
+      {
+        "path": "src/modules/workspace/events/async-task-center-event.ts",
+        "lines": 21
+      },
+      {
+        "path": "src/modules/workspace/events/session-generation-event.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/modules/workspace/events/session-output-restored-event.ts",
+        "lines": 24
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-guidance.test.ts",
+        "lines": 81
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-guidance.ts",
+        "lines": 144
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-result-hydrator.test.ts",
+        "lines": 485
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-result-hydrator.ts",
+        "lines": 231
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-submit-policy.test.ts",
+        "lines": 18
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-submit-policy.ts",
+        "lines": 19
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-terminal-decision.test.ts",
+        "lines": 75
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/async-terminal-decision.ts",
+        "lines": 128
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/file-utils.test.ts",
+        "lines": 28
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/file-utils.ts",
+        "lines": 52
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-actions.contract.test.ts",
+        "lines": 462
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-actions.session-restore.test.ts",
+        "lines": 254
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-actions.test.ts",
+        "lines": 1104
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-actions.ts",
+        "lines": 911
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-navigation.test.ts",
+        "lines": 101
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-navigation.ts",
+        "lines": 70
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-request.test.ts",
+        "lines": 102
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-request.ts",
+        "lines": 71
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-state.test.ts",
+        "lines": 16
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-state.ts",
+        "lines": 35
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-upload-validation.test.ts",
+        "lines": 55
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/generation-upload-validation.ts",
+        "lines": 82
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/history-actions.imports.test.ts",
+        "lines": 12
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/history-actions.test.ts",
+        "lines": 494
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/history-actions.ts",
+        "lines": 402
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/index.ts",
+        "lines": 14
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/input-sections.test.ts",
+        "lines": 117
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/input-sections.ts",
+        "lines": 108
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/section-props.ts",
+        "lines": 160
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/session-tracking-context.test.ts",
+        "lines": 116
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/session-tracking-context.ts",
+        "lines": 102
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/upload-input-value.test.ts",
+        "lines": 205
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/upload-input-value.ts",
+        "lines": 212
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/workflow-steps.test.ts",
+        "lines": 83
+      },
+      {
+        "path": "src/modules/workspace/hooks/content-sections/workflow-steps.ts",
+        "lines": 76
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/chatflow-image-restore.test.ts",
+        "lines": 99
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/chatflow-image-restore.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/filtering.test.ts",
+        "lines": 193
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/filtering.ts",
+        "lines": 273
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/index.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/lane-performance.test.ts",
+        "lines": 75
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/lane-performance.ts",
+        "lines": 73
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/left-sidebar-props.ts",
+        "lines": 278
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/optimistic-session.test.ts",
+        "lines": 179
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/optimistic-session.ts",
+        "lines": 250
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-actions.ts",
+        "lines": 70
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-dialog-view.test.tsx",
+        "lines": 179
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-dialog-view.ts",
+        "lines": 133
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-list-lifecycle.test.tsx",
+        "lines": 111
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-list-lifecycle.ts",
+        "lines": 119
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-loading.test.ts",
+        "lines": 152
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-loading.ts",
+        "lines": 96
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-preload.test.ts",
+        "lines": 80
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-preload.ts",
+        "lines": 40
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-reorder-control.test.ts",
+        "lines": 135
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-reorder-control.ts",
+        "lines": 79
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-state-cleanup.test.ts",
+        "lines": 104
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/project-state-cleanup.ts",
+        "lines": 91
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/recovery-queue.test.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/recovery-queue.ts",
+        "lines": 37
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-association-refresh.test.ts",
+        "lines": 56
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-association-refresh.ts",
+        "lines": 81
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-association-state.test.ts",
+        "lines": 218
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-association-state.ts",
+        "lines": 247
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-click.chatflow-conversation.test.ts",
+        "lines": 97
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-click.debug-storage.test.ts",
+        "lines": 102
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-click.restore-status.test.ts",
+        "lines": 519
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-click.ts",
+        "lines": 1048
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-list-view.test.ts",
+        "lines": 201
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-list-view.ts",
+        "lines": 165
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-loading.test.ts",
+        "lines": 168
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-loading.ts",
+        "lines": 155
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-refresh-signature.test.ts",
+        "lines": 61
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-refresh-signature.ts",
+        "lines": 89
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-refresh-targets.test.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/session-refresh-targets.ts",
+        "lines": 22
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/sprint-refresh-controller.ts",
+        "lines": 157
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/tool-version.ts",
+        "lines": 102
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/types.ts",
+        "lines": 69
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-child-project-loading.test.tsx",
+        "lines": 265
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-child-project-loading.ts",
+        "lines": 210
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-optimistic-session-expiry.test.ts",
+        "lines": 60
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-optimistic-session-expiry.ts",
+        "lines": 59
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-project-order-lifecycle.test.tsx",
+        "lines": 131
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-project-order-lifecycle.ts",
+        "lines": 106
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-project-session-count-overrides.test.tsx",
+        "lines": 150
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-project-session-count-overrides.ts",
+        "lines": 117
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-page-loading.test.tsx",
+        "lines": 295
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-page-loading.ts",
+        "lines": 339
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-refresh-bindings.test.tsx",
+        "lines": 153
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-refresh-bindings.ts",
+        "lines": 66
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-remote-handlers.test.tsx",
+        "lines": 246
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-session-remote-handlers.ts",
+        "lines": 221
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-sprint-refresh-controller.ts",
+        "lines": 61
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-workspace-lane-lifecycle.test.tsx",
+        "lines": 195
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/use-workspace-lane-lifecycle.ts",
+        "lines": 256
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/visible-session-list.test.ts",
+        "lines": 163
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/visible-session-list.ts",
+        "lines": 56
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/workspace-ready-performance.test.ts",
+        "lines": 80
+      },
+      {
+        "path": "src/modules/workspace/hooks/sidebar/workspace-ready-performance.ts",
+        "lines": 61
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceChatPanel.test.tsx",
+        "lines": 192
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceChatPanel.ts",
+        "lines": 191
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceChatWidthSync.test.tsx",
+        "lines": 75
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceChatWidthSync.ts",
+        "lines": 107
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceContentSections.restore-output.test.tsx",
+        "lines": 364
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceContentSections.test.tsx",
+        "lines": 490
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceContentSections.ts",
+        "lines": 1014
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceDialogs.ts",
+        "lines": 233
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceLayout.test.tsx",
+        "lines": 316
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceLayout.ts",
+        "lines": 289
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceNavigation.ts",
+        "lines": 113
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceShortcuts.ts",
+        "lines": 27
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceSidebar.sprint.test.ts",
+        "lines": 200
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceSidebar.ts",
+        "lines": 816
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceWorkflowList.test.tsx",
+        "lines": 137
+      },
+      {
+        "path": "src/modules/workspace/hooks/useWorkspaceWorkflowList.ts",
+        "lines": 101
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-chat-width.test.ts",
+        "lines": 134
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-chat-width.ts",
+        "lines": 39
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-env.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-history-confirm.test.ts",
+        "lines": 65
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-history-confirm.ts",
+        "lines": 51
+      },
+      {
+        "path": "src/modules/workspace/hooks/workspace-layout-types.ts",
+        "lines": 127
+      },
+      {
+        "path": "src/modules/workspace/index.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/modules/workspace/services/ai.service.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/services/file.service.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/services/index.ts",
+        "lines": 6
+      },
+      {
+        "path": "src/modules/workspace/services/project.service.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/services/session.service.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/services/statistics.service.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/modules/workspace/stores/async-task.store.ts",
+        "lines": 147
+      },
+      {
+        "path": "src/modules/workspace/stores/index.ts",
+        "lines": 18
+      },
+      {
+        "path": "src/modules/workspace/stores/useContentStore.test.ts",
+        "lines": 56
+      },
+      {
+        "path": "src/modules/workspace/stores/useContentStore.ts",
+        "lines": 193
+      },
+      {
+        "path": "src/modules/workspace/stores/useConversationSettingsStore.ts",
+        "lines": 157
+      },
+      {
+        "path": "src/modules/workspace/stores/useWorkspaceStore.ts",
+        "lines": 174
+      },
+      {
+        "path": "src/modules/workspace/stores/useWorkspaceUIStore.rehydrate.test.ts",
+        "lines": 52
+      },
+      {
+        "path": "src/modules/workspace/stores/useWorkspaceUIStore.test.ts",
+        "lines": 46
+      },
+      {
+        "path": "src/modules/workspace/stores/useWorkspaceUIStore.ts",
+        "lines": 296
+      },
+      {
+        "path": "src/modules/workspace/WorkspaceApp.tsx",
+        "lines": 306
+      },
+      {
+        "path": "src/monitoring/business-metrics.test.ts",
+        "lines": 44
+      },
+      {
+        "path": "src/monitoring/business-metrics.ts",
+        "lines": 36
+      },
+      {
+        "path": "src/monitoring/global-error-handlers.test.ts",
+        "lines": 71
+      },
+      {
+        "path": "src/monitoring/global-error-handlers.ts",
+        "lines": 53
+      },
+      {
+        "path": "src/monitoring/index.test.ts",
+        "lines": 97
+      },
+      {
+        "path": "src/monitoring/index.ts",
+        "lines": 140
+      },
+      {
+        "path": "src/monitoring/monitoring-env.ts",
+        "lines": 32
+      },
+      {
+        "path": "src/monitoring/sentry-scrubbing.test.ts",
+        "lines": 58
+      },
+      {
+        "path": "src/monitoring/sentry-scrubbing.ts",
+        "lines": 82
+      },
+      {
+        "path": "src/monitoring/web-vitals.test.ts",
+        "lines": 82
+      },
+      {
+        "path": "src/monitoring/web-vitals.ts",
+        "lines": 61
+      },
+      {
+        "path": "src/pages/auth/AuthPage.test.tsx",
+        "lines": 92
+      },
+      {
+        "path": "src/pages/auth/AuthPage.tsx",
+        "lines": 159
+      },
+      {
+        "path": "src/pages/user/ProfileAndRewardPage.test.tsx",
+        "lines": 78
+      },
+      {
+        "path": "src/pages/user/ProfileAndRewardPage.tsx",
+        "lines": 371
+      },
+      {
+        "path": "src/stores/index.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/stores/useAsyncToolStore.ts",
+        "lines": 23
+      },
+      {
+        "path": "src/stores/useAuthStore.logout.test.ts",
+        "lines": 98
+      },
+      {
+        "path": "src/stores/useAuthStore.ts",
+        "lines": 314
+      },
+      {
+        "path": "src/stores/useAuthStore.unauthorized.test.ts",
+        "lines": 46
+      },
+      {
+        "path": "src/stores/useModelPreferenceStore.ts",
+        "lines": 122
+      },
+      {
+        "path": "src/stores/useThemeStore.ts",
+        "lines": 51
+      },
+      {
+        "path": "src/stores/useUIStore.ts",
+        "lines": 34
+      },
+      {
+        "path": "src/stores/useUserStore.ts",
+        "lines": 66
+      },
+      {
+        "path": "src/styles/globals.css",
+        "lines": 134
+      },
+      {
+        "path": "src/styles/marketing-theme.css",
+        "lines": 61
+      },
+      {
+        "path": "src/styles/outputSectionHeader.css",
+        "lines": 45
+      },
+      {
+        "path": "src/styles/variables.css",
+        "lines": 132
+      },
+      {
+        "path": "src/types/api/ai-categories.ts",
+        "lines": 134
+      },
+      {
+        "path": "src/types/api/ai-execution.ts",
+        "lines": 246
+      },
+      {
+        "path": "src/types/api/auth.ts",
+        "lines": 98
+      },
+      {
+        "path": "src/types/api/common.ts",
+        "lines": 29
+      },
+      {
+        "path": "src/types/api/compatibility.ts",
+        "lines": 17
+      },
+      {
+        "path": "src/types/api/folders-workflow.ts",
+        "lines": 135
+      },
+      {
+        "path": "src/types/api/history.ts",
+        "lines": 35
+      },
+      {
+        "path": "src/types/api/index.ts",
+        "lines": 16
+      },
+      {
+        "path": "src/types/api/project-management.ts",
+        "lines": 106
+      },
+      {
+        "path": "src/types/api/projects.ts",
+        "lines": 129
+      },
+      {
+        "path": "src/types/api/recharge.ts",
+        "lines": 127
+      },
+      {
+        "path": "src/types/api/statistics.ts",
+        "lines": 69
+      },
+      {
+        "path": "src/types/api/user-invite.ts",
+        "lines": 64
+      },
+      {
+        "path": "src/types/api/user-message.ts",
+        "lines": 42
+      },
+      {
+        "path": "src/types/api/user-suggestion.ts",
+        "lines": 33
+      },
+      {
+        "path": "src/types/api/user.ts",
+        "lines": 95
+      },
+      {
+        "path": "src/types/api.ts",
+        "lines": 5
+      },
+      {
+        "path": "src/types/chat.ts",
+        "lines": 35
+      },
+      {
+        "path": "src/types/common.ts",
+        "lines": 93
+      },
+      {
+        "path": "src/types/index.ts",
+        "lines": 8
+      },
+      {
+        "path": "src/types/ui.ts",
+        "lines": 6
+      },
+      {
+        "path": "src/types/workspace.ts",
+        "lines": 28
+      },
+      {
+        "path": "src/utils/animations.ts",
+        "lines": 69
+      },
+      {
+        "path": "src/utils/auth-user-normalization.test.ts",
+        "lines": 56
+      },
+      {
+        "path": "src/utils/auth-user-normalization.ts",
+        "lines": 117
+      },
+      {
+        "path": "src/utils/chatContentSanitizer.test.ts",
+        "lines": 34
+      },
+      {
+        "path": "src/utils/chatContentSanitizer.ts",
+        "lines": 22
+      },
+      {
+        "path": "src/utils/chatflow-image-content.ts",
+        "lines": 252
+      },
+      {
+        "path": "src/utils/chatInputAppend.test.ts",
+        "lines": 47
+      },
+      {
+        "path": "src/utils/chatInputAppend.ts",
+        "lines": 38
+      },
+      {
+        "path": "src/utils/chatPanelWidth.test.ts",
+        "lines": 49
+      },
+      {
+        "path": "src/utils/chatPanelWidth.ts",
+        "lines": 44
+      },
+      {
+        "path": "src/utils/dify-file-object.test.ts",
+        "lines": 69
+      },
+      {
+        "path": "src/utils/dify-file-object.ts",
+        "lines": 256
+      },
+      {
+        "path": "src/utils/download.test.ts",
+        "lines": 92
+      },
+      {
+        "path": "src/utils/download.ts",
+        "lines": 371
+      },
+      {
+        "path": "src/utils/errorHandler.ts",
+        "lines": 151
+      },
+      {
+        "path": "src/utils/export-utils/entries.ts",
+        "lines": 224
+      },
+      {
+        "path": "src/utils/export-utils/executor.ts",
+        "lines": 174
+      },
+      {
+        "path": "src/utils/export-utils/formatters.ts",
+        "lines": 65
+      },
+      {
+        "path": "src/utils/export-utils/models.ts",
+        "lines": 52
+      },
+      {
+        "path": "src/utils/export-utils/task.ts",
+        "lines": 50
+      },
+      {
+        "path": "src/utils/export-utils/__tests__/formatters.test.ts",
+        "lines": 111
+      },
+      {
+        "path": "src/utils/exportUtils.test.ts",
+        "lines": 188
+      },
+      {
+        "path": "src/utils/exportUtils.ts",
+        "lines": 137
+      },
+      {
+        "path": "src/utils/file-url.test.ts",
+        "lines": 42
+      },
+      {
+        "path": "src/utils/file-url.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/utils/file-utils.ts",
+        "lines": 119
+      },
+      {
+        "path": "src/utils/generated-file-url.test.ts",
+        "lines": 53
+      },
+      {
+        "path": "src/utils/generated-file-url.ts",
+        "lines": 39
+      },
+      {
+        "path": "src/utils/helpers.ts",
+        "lines": 135
+      },
+      {
+        "path": "src/utils/safe-storage.test.ts",
+        "lines": 48
+      },
+      {
+        "path": "src/utils/safe-storage.ts",
+        "lines": 76
+      },
+      {
+        "path": "src/utils/user-data-export.test.ts",
+        "lines": 289
+      },
+      {
+        "path": "src/utils/user-data-export.ts",
+        "lines": 497
+      },
+      {
+        "path": "src/utils/validators.ts",
+        "lines": 60
+      },
+      {
+        "path": "src/utils/workflow-output-text.ts",
+        "lines": 291
+      },
+      {
+        "path": "src/utils/workflow-result.test.ts",
+        "lines": 506
+      },
+      {
+        "path": "src/utils/workflow-result.ts",
+        "lines": 314
+      },
+      {
+        "path": "src/utils/__tests__/errorHandler.test.ts",
+        "lines": 251
+      },
+      {
+        "path": "src/utils/__tests__/helpers.test.ts",
+        "lines": 175
+      },
+      {
+        "path": "src/workers/hash.worker.ts",
+        "lines": 46
+      },
+      {
+        "path": "src/workers/useFileHasher.ts",
+        "lines": 202
+      },
+      {
+        "path": "src/__tests__/button-type.test.ts",
+        "lines": 85
+      },
+      {
+        "path": "src/__tests__/form-control-accessibility.test.ts",
+        "lines": 95
+      },
+      {
+        "path": "src/__tests__/integration/protected-route.integration.test.tsx",
+        "lines": 74
+      },
+      {
+        "path": "src/__tests__/mocks/markdown-plugin.ts",
+        "lines": 4
+      },
+      {
+        "path": "src/__tests__/semantic-accessibility.test.ts",
+        "lines": 783
+      },
+      {
+        "path": "src/__tests__/setup.ts",
+        "lines": 66
+      },
+      {
+        "path": "src/__tests__/unit/session.service.test.ts",
+        "lines": 191
+      },
+      {
+        "path": "src/__tests__/vite-manual-chunks.test.ts",
+        "lines": 24
+      }
+    ]
+  },
+  "scripts": {
+    "totalLines": 6847,
+    "extensionBreakdown": [
+      {
+        "extension": ".cjs",
+        "lines": 437,
+        "files": 3
+      },
+      {
+        "extension": ".html",
+        "lines": 50,
+        "files": 2
+      },
+      {
+        "extension": ".mjs",
+        "lines": 3624,
+        "files": 19
+      },
+      {
+        "extension": ".ts",
+        "lines": 733,
+        "files": 3
+      },
+      {
+        "extension": ".tsx",
+        "lines": 2003,
+        "files": 14
+      }
+    ],
+    "files": [
+      {
+        "path": "scripts/api/build-docs.mjs",
+        "lines": 286
+      },
+      {
+        "path": "scripts/api/check-metadata.mjs",
+        "lines": 103
+      },
+      {
+        "path": "scripts/api/find-unused-components.mjs",
+        "lines": 57
+      },
+      {
+        "path": "scripts/api/mock-server.mjs",
+        "lines": 196
+      },
+      {
+        "path": "scripts/api/run-unused-check.mjs",
+        "lines": 116
+      },
+      {
+        "path": "scripts/api/update-trend.mjs",
+        "lines": 64
+      },
+      {
+        "path": "scripts/build/check-bundle-size.mjs",
+        "lines": 217
+      },
+      {
+        "path": "scripts/build/check-bundle-size.test.mjs",
+        "lines": 104
+      },
+      {
+        "path": "scripts/build/create-dist-package.cjs",
+        "lines": 148
+      },
+      {
+        "path": "scripts/build/create-project-package.cjs",
+        "lines": 122
+      },
+      {
+        "path": "scripts/build/strip-katex-fonts.mjs",
+        "lines": 54
+      },
+      {
+        "path": "scripts/build/strip-katex-fonts.test.mjs",
+        "lines": 39
+      },
+      {
+        "path": "scripts/changelog/notify.ts",
+        "lines": 410
+      },
+      {
+        "path": "scripts/changelog/sync-release-notes.mjs",
+        "lines": 90
+      },
+      {
+        "path": "scripts/changelog/sync-release-notes.test.mjs",
+        "lines": 38
+      },
+      {
+        "path": "scripts/copy-to-oiw.cjs",
+        "lines": 167
+      },
+      {
+        "path": "scripts/e2e/semantic-history-image.mjs",
+        "lines": 721
+      },
+      {
+        "path": "scripts/e2e/semantic-history-image.test.mjs",
+        "lines": 211
+      },
+      {
+        "path": "scripts/legacy/admin/App.tsx",
+        "lines": 33
+      },
+      {
+        "path": "scripts/legacy/admin/components/AdminHeader.tsx",
+        "lines": 56
+      },
+      {
+        "path": "scripts/legacy/admin/components/AdminLayout.tsx",
+        "lines": 26
+      },
+      {
+        "path": "scripts/legacy/admin/components/AdminSidebar.tsx",
+        "lines": 170
+      },
+      {
+        "path": "scripts/legacy/admin/main.tsx",
+        "lines": 11
+      },
+      {
+        "path": "scripts/legacy/admin/pages/APIManagement.tsx",
+        "lines": 314
+      },
+      {
+        "path": "scripts/legacy/admin/pages/CMSManagement.tsx",
+        "lines": 97
+      },
+      {
+        "path": "scripts/legacy/admin/pages/ConsumptionManagement.tsx",
+        "lines": 338
+      },
+      {
+        "path": "scripts/legacy/admin/pages/Dashboard.tsx",
+        "lines": 201
+      },
+      {
+        "path": "scripts/legacy/admin/pages/OperationLogs.tsx",
+        "lines": 18
+      },
+      {
+        "path": "scripts/legacy/admin/pages/RechargeManagement.tsx",
+        "lines": 335
+      },
+      {
+        "path": "scripts/legacy/admin/pages/SystemSettings.tsx",
+        "lines": 18
+      },
+      {
+        "path": "scripts/legacy/admin/pages/UserManagement.tsx",
+        "lines": 335
+      },
+      {
+        "path": "scripts/legacy/admin/test.html",
+        "lines": 36
+      },
+      {
+        "path": "scripts/legacy/admin.html",
+        "lines": 14
+      },
+      {
+        "path": "scripts/release/prepare-release.mjs",
+        "lines": 427
+      },
+      {
+        "path": "scripts/release/prepare-release.test.mjs",
+        "lines": 230
+      },
+      {
+        "path": "scripts/security/scan-secrets.mjs",
+        "lines": 229
+      },
+      {
+        "path": "scripts/security/scan-secrets.test.mjs",
+        "lines": 77
+      },
+      {
+        "path": "scripts/tools/code-metrics.mjs",
+        "lines": 365
+      },
+      {
+        "path": "scripts/validate-mock.ts",
+        "lines": 296
+      },
+      {
+        "path": "scripts/validate-theme-tokens.ts",
+        "lines": 27
+      },
+      {
+        "path": "scripts/verify-content-renderer-pipeline.tsx",
+        "lines": 51
+      }
+    ]
+  },
+  "api": {
+    "apiClient": {
+      "total": 45,
+      "methodBreakdown": {
+        "GET": 28,
+        "POST": 16,
+        "DELETE": 1
+      },
+      "endpoints": [
+        {
+          "url": "/apicategories/apidetail",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/cms.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/charteflowcreate",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/ai.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/chatflowprompt",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/ai.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/configdetail",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/cms.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/create",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/ai.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/detail",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/cms.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/instructioncreate",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/instruction.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/instructiondelete",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/instruction.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/instructionlist",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/instruction.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/queryprocess/{taskKey}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/ai.service.ts"
+          ]
+        },
+        {
+          "url": "/apicategories/userlikecategory",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/cms.service.ts"
+          ]
+        },
+        {
+          "url": "/auth/login",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts"
+          ]
+        },
+        {
+          "url": "/auth/logout",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts"
+          ]
+        },
+        {
+          "url": "/auth/pwdlogin",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts"
+          ]
+        },
+        {
+          "url": "/auth/register",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts"
+          ]
+        },
+        {
+          "url": "/auth/send",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts"
+          ]
+        },
+        {
+          "url": "/recharge/createorder",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/recharge/list",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/recharge/orderquery?order_no={orderNo}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/recharge/rechargeconfig",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/user/detail",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/rechargelist",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/user/runningwater/list",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/billing.service.ts"
+          ]
+        },
+        {
+          "url": "/user/update",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/updatepwd",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/auth.service.ts",
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/data/clear",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/data/stats",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/folderarchive/{id}/{archiveFlag}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/project.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/folderupd/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/project.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/inviteconfig",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/user/projectdetail/{projectId}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/statistics.service.ts"
+          ]
+        },
+        {
+          "url": "/user/userhasdel/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/notification.service.ts"
+          ]
+        },
+        {
+          "url": "/user/userhasdelall",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/notification.service.ts"
+          ]
+        },
+        {
+          "url": "/user/userhasread/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/notification.service.ts"
+          ]
+        },
+        {
+          "url": "/user/userhasreadall",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/notification.service.ts"
+          ]
+        },
+        {
+          "url": "/user/userinviteslist",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "/user/usermessagelist",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/notification.service.ts"
+          ]
+        },
+        {
+          "url": "/usersuggestion/create",
+          "methods": [
+            "POST"
+          ],
+          "files": [
+            "src/api/services/user.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.deleteLegacy}/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/history.service.ts",
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.deleteRest}/{id}",
+          "methods": [
+            "DELETE"
+          ],
+          "files": [
+            "src/api/services/history.service.ts",
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.detail}/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.move}/{id}/{data.projectId}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.move}/{id}/{folderId}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/history.service.ts",
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{SESSION_ROUTES.rename}/{id}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/history.service.ts",
+            "src/api/services/session.service.ts"
+          ]
+        },
+        {
+          "url": "{endpoint}/{projectId}",
+          "methods": [
+            "GET"
+          ],
+          "files": [
+            "src/api/services/project.service.ts"
+          ]
+        }
+      ]
+    },
+    "fetch": {
+      "total": 1,
+      "endpoints": [
+        {
+          "url": "{RELEASE_NOTES_URL}?v={encodeURIComponent(APP_VERSION_LABEL)}",
+          "files": [
+            "src/components/ReleaseNotesDialog.tsx"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,344 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy User API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网用户信息、反馈、邀请、数据管理 legacy 接口定义。
+
+    - 后端路径：`/user/*`
+    - 代理后路径：`/api/user/*`
+    - 对应接口文档：`API接口文档-用户端.md`
+
+    交叉引用：
+    - 修改密码 `POST /user/updatepwd` 见 `auth-legacy.yaml`（字段名 newpasssword/truepassword）。
+    - 用户余额包含在 `/user/detail` 响应中（非独立的 /user/balance，后者已废弃）。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy User
+    description: 兼容现网用户相关接口
+paths:
+  /api/user/detail:
+    get:
+      operationId: legacyGetUserDetail
+      summary: 获取当前用户详情
+      description: 返回当前登录用户的详细信息（含余额、手机号、邀请码等）。
+      tags:
+        - Legacy User
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyUserDetailResponse'
+              examples:
+                success:
+                  summary: 成功示例
+                  value:
+                    code: 200
+                    msg: 成功
+                    data:
+                      id: 1
+                      username: user_1
+                      phone: '<手机号>'
+                      balance: 100.5
+                      avatar: '<头像 URL>'
+                      invite_code: ABC123
+  /api/user/update:
+    post:
+      operationId: legacyUpdateUser
+      summary: 更新用户信息
+      description: |
+        更新用户资料（用户名、手机号、头像等）。被多处复用：
+        更新资料、更新头像、通用字段更新。
+      tags:
+        - Legacy User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                phone:
+                  type: string
+                avatar:
+                  type: string
+                  description: 头像 URL。
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/upload:
+    post:
+      operationId: legacyUploadUserFile
+      summary: 旧版用户文件上传
+      description: |
+        兼容现网 `/user/upload` 上传入口，用于头像、聊天附件等旧流程。
+        当前态文件上传接口见 `files.yaml` 的 `POST /api/files`。
+      tags:
+        - Legacy User
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                sessionId:
+                  type: string
+                  description: 可选，旧聊天会话 ID。
+      responses:
+        '200':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyUploadResponse'
+  /api/usersuggestion/create:
+    post:
+      operationId: legacyCreateUserSuggestion
+      summary: 创建用户反馈建议
+      description: 提交用户反馈或功能建议。
+      tags:
+        - Legacy User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyCreateSuggestionRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyCreateSuggestionResponse'
+  /api/user/userinviteslist:
+    get:
+      operationId: legacyGetUserInvitesList
+      summary: 获取邀请记录列表
+      description: 分页获取当前用户的邀请记录。
+      tags:
+        - Legacy User
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyInviteListResponse'
+  /api/user/user/inviteconfig:
+    get:
+      operationId: legacyGetInviteConfig
+      summary: 获取邀请配置
+      description: 返回邀请规则、奖励配置等信息。
+      tags:
+        - Legacy User
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyInviteConfigResponse'
+  /api/user/user/data/stats:
+    get:
+      operationId: legacyGetUserDataStats
+      summary: 获取用户数据统计
+      description: 返回项目数、会话数、存储用量等聚合统计。
+      tags:
+        - Legacy User
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyUserDataStatsResponse'
+  /api/user/user/data/clear:
+    post:
+      operationId: legacyClearUserData
+      summary: 清空用户数据
+      description: |
+        ⚠️ 破坏性操作：清空当前用户的业务数据。前端应有二次确认。
+      tags:
+        - Legacy User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 空请求体（确认执行）。
+      responses:
+        '200':
+          description: 清空成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyClearDataResultResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyUserDetail:
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        phone:
+          type: string
+        balance:
+          type: number
+        avatar:
+          type: string
+          description: 头像 URL（后端可能为 avatar，前端归一化为 avatarUrl）。
+        invite_code:
+          type: string
+    LegacyUserDetailResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        data:
+          $ref: '#/components/schemas/LegacyUserDetail'
+    LegacyVoidResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+    LegacyUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 上传后的访问地址。
+        saved_path:
+          type: string
+          description: 旧接口可能返回的保存路径。
+        filename:
+          type: string
+          description: 文件名。
+    LegacyCreateSuggestionRequest:
+      type: object
+      description: 反馈建议请求体（字段对应 CreateUserSuggestionRequest）。
+      properties:
+        content:
+          type: string
+        type:
+          type: string
+    LegacyCreateSuggestionResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: number
+    LegacyInviteListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          type: object
+          properties:
+            total:
+              type: number
+            items:
+              type: array
+              items:
+                type: object
+    LegacyInviteConfig:
+      type: object
+      description: 邀请配置（字段对应 InviteConfig 类型）。
+      properties:
+        reward:
+          type: number
+    LegacyInviteConfigResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyInviteConfig'
+    LegacyUserDataStats:
+      type: object
+      description: 用户数据统计（项目数、会话数等）。
+      properties:
+        project_count:
+          type: number
+        session_count:
+          type: number
+    LegacyUserDataStatsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyUserDataStats'
+    LegacyClearDataResult:
+      type: object
+      properties:
+        cleared:
+          type: boolean
+    LegacyClearDataResultResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyClearDataResult'

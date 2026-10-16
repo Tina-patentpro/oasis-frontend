@@ -1,0 +1,794 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Data Deletion API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: |
+    数据删除管理接口定义。
+
+    - 对应设计目标：6.a 数据删除接口缺失
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §5
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Data Deletion」
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+tags:
+  - name: Data Deletion Requests
+    description: 数据删除请求管理接口
+  - name: Data Deletion Policies
+    description: 数据删除策略管理接口
+  - name: Data Deletion Audit
+    description: 数据删除审计接口
+paths:
+  /api/data-deletion/requests:
+    get:
+      operationId: listDeletionRequests
+      x-contract-scope: current
+      summary: 获取删除请求列表
+      description: 分页查询数据删除请求，支持按状态、类型、时间等条件过滤。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requesterId
+          in: query
+          description: 请求者ID过滤
+          schema:
+            type: string
+        - name: targetId
+          in: query
+          description: 目标对象ID过滤
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: 删除类型过滤
+          schema:
+            type: string
+            enum: [account, data, batch]
+        - name: status
+          in: query
+          description: 状态过滤
+          schema:
+            type: string
+            enum: [pending, approved, executing, completed, failed, cancelled]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/DeletionRequestSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createDeletionRequest
+      x-contract-scope: deferred
+      x-deferred-reason: data-governance-requires-business-review
+      summary: 创建删除请求
+      description: 创建新的数据删除请求，支持账户删除、数据删除和批量删除。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeletionRequestRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeletionRequestDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/data-deletion/requests/{requestId}:
+    get:
+      operationId: getDeletionRequestDetail
+      x-contract-scope: current
+      summary: 获取删除请求详情
+      description: 获取指定删除请求的详细信息，包括审批历史、执行记录和合规信息。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 删除请求ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeletionRequestDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/data-deletion/requests/{requestId}/approve:
+    post:
+      operationId: approveDeletionRequest
+      x-contract-scope: deferred
+      x-deferred-reason: data-governance-requires-business-review
+      summary: 审批删除请求
+      description: 审批待处理的删除请求，支持通过或拒绝。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 删除请求ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [approve, reject]
+                  description: 审批动作
+                comment:
+                  type: string
+                  description: 审批意见
+      responses:
+        '200':
+          description: 审批成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeletionRequestApproval'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/data-deletion/requests/{requestId}/execute:
+    post:
+      operationId: executeDeletionRequest
+      x-contract-scope: deferred
+      x-deferred-reason: destructive-data-operation
+      summary: 执行删除请求
+      description: 执行已审批通过的删除请求，开始数据删除流程。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 删除请求ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+                  default: false
+                  description: 是否强制执行
+      responses:
+        '200':
+          description: 执行成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeletionExecution'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/data-deletion/requests/{requestId}/restore:
+    post:
+      operationId: restoreDeletedData
+      x-contract-scope: deferred
+      x-deferred-reason: data-governance-requires-business-review
+      summary: 恢复已删除数据
+      description: 在冷静期内恢复已删除的数据。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 删除请求ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: 恢复原因
+      responses:
+        '200':
+          description: 恢复成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DataRestore'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/data-deletion/requests/{requestId}/proof:
+    get:
+      operationId: getDeletionProof
+      x-contract-scope: current
+      summary: 获取删除证明
+      description: 获取数据删除的不可恢复证明，用于合规审计。
+      tags:
+        - Data Deletion Requests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 删除请求ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeletionProof'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/data-deletion/policies:
+    get:
+      operationId: listDeletionPolicies
+      x-contract-scope: current
+      summary: 获取删除策略列表
+      description: 分页查询数据删除策略，支持按类型、状态等条件过滤。
+      tags:
+        - Data Deletion Policies
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/DeletionPolicySummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/data-deletion/audit:
+    get:
+      operationId: getDeletionAuditLogs
+      x-contract-scope: current
+      summary: 获取删除操作审计日志
+      description: 获取数据删除相关的审计日志，支持条件过滤。
+      tags:
+        - Data Deletion Audit
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/DeletionAuditLog'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      required: [success]
+      description: 通用响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误描述。
+        details:
+          type: string
+          nullable: true
+          description: 附加调试信息。
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      description: 数据删除接口统一错误响应。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息。
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页。
+    DeletionRequestSummary:
+      type: object
+      required: [id, type, status, requesterId, targetId, createdAt]
+      description: 删除请求概要信息。
+      properties:
+        id:
+          type: string
+          description: 删除请求ID。
+        type:
+          type: string
+          enum: [account, data, batch]
+          description: 删除类型。
+        status:
+          type: string
+          enum: [pending, approved, executing, completed, failed, cancelled]
+          description: 删除状态。
+        requesterId:
+          type: string
+          description: 请求者ID。
+        targetId:
+          type: string
+          description: 目标对象ID。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新时间。
+    DeletionRequestDetail:
+      allOf:
+        - $ref: '#/components/schemas/DeletionRequestSummary'
+        - type: object
+          required: [reason, requester, target]
+          properties:
+            reason:
+              type: string
+              description: 删除原因。
+            requester:
+              type: object
+              required: [id, name, email]
+              description: 请求者信息。
+              properties:
+                id:
+                  type: string
+                  description: 用户ID。
+                name:
+                  type: string
+                  description: 用户姓名。
+                email:
+                  type: string
+                  format: email
+                  description: 用户邮箱。
+            target:
+              type: object
+              required: [id, type]
+              description: 目标对象信息。
+              properties:
+                id:
+                  type: string
+                  description: 目标对象ID。
+                type:
+                  type: string
+                  description: 目标对象类型。
+                name:
+                  type: string
+                  description: 目标对象名称。
+    CreateDeletionRequestRequest:
+      type: object
+      required: [type, targetId, reason]
+      description: 创建删除请求请求体。
+      properties:
+        type:
+          type: string
+          enum: [account, data, batch]
+          description: 删除类型。
+        targetId:
+          type: string
+          description: 目标对象ID。
+        reason:
+          type: string
+          description: 删除原因。
+        description:
+          type: string
+          description: 删除描述。
+    DeletionRequestApproval:
+      type: object
+      required: [id, action, actor, timestamp]
+      description: 删除请求审批记录。
+      properties:
+        id:
+          type: string
+          description: 审批记录ID。
+        requestId:
+          type: string
+          description: 删除请求ID。
+        action:
+          type: string
+          enum: [submitted, approved, rejected]
+          description: 审批动作。
+        actor:
+          type: object
+          required: [id, name, email]
+          description: 审批人信息。
+          properties:
+            id:
+              type: string
+              description: 用户ID。
+            name:
+              type: string
+              description: 用户姓名。
+            email:
+              type: string
+              format: email
+              description: 用户邮箱。
+        timestamp:
+          type: string
+          format: date-time
+          description: 审批时间。
+        comment:
+          type: string
+          description: 审批意见。
+    DeletionExecution:
+      type: object
+      required: [requestId, executionId, startedAt]
+      description: 删除执行记录。
+      properties:
+        requestId:
+          type: string
+          description: 删除请求ID。
+        executionId:
+          type: string
+          description: 执行ID。
+        startedAt:
+          type: string
+          format: date-time
+          description: 开始执行时间。
+        completedAt:
+          type: string
+          format: date-time
+          description: 完成时间。
+        status:
+          type: string
+          enum: [running, completed, failed, cancelled]
+          description: 执行状态。
+    DataRestore:
+      type: object
+      required: [requestId, restoredAt, restoredBy]
+      description: 数据恢复记录。
+      properties:
+        requestId:
+          type: string
+          description: 删除请求ID。
+        restoredAt:
+          type: string
+          format: date-time
+          description: 恢复时间。
+        restoredBy:
+          type: object
+          required: [id, name, email]
+          description: 恢复操作人信息。
+          properties:
+            id:
+              type: string
+              description: 用户ID。
+            name:
+              type: string
+              description: 用户姓名。
+            email:
+              type: string
+              format: email
+              description: 用户邮箱。
+        reason:
+          type: string
+          description: 恢复原因。
+    DeletionProof:
+      type: object
+      required: [proofId, requestId, generatedAt, generatedBy]
+      description: 删除证明信息。
+      properties:
+        proofId:
+          type: string
+          description: 证明ID。
+        requestId:
+          type: string
+          description: 删除请求ID。
+        proofType:
+          type: string
+          enum: [standard, custom]
+          description: 证明类型。
+        generatedAt:
+          type: string
+          format: date-time
+          description: 生成时间。
+        generatedBy:
+          type: string
+          description: 生成者。
+        signature:
+          type: string
+          description: 数字签名。
+        checksum:
+          type: string
+          description: 校验和。
+    DeletionPolicySummary:
+      type: object
+      required: [id, name, type, status, createdAt, createdBy]
+      description: 删除策略概要信息。
+      properties:
+        id:
+          type: string
+          description: 策略ID。
+        name:
+          type: string
+          description: 策略名称。
+        description:
+          type: string
+          description: 策略描述。
+        type:
+          type: string
+          enum: [retention, anonymization, cascade, approval]
+          description: 策略类型。
+        status:
+          type: string
+          enum: [active, inactive, draft]
+          description: 策略状态。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        createdBy:
+          type: string
+          description: 创建者ID。
+        usageCount:
+          type: integer
+          description: 使用次数。
+        isActive:
+          type: boolean
+          description: 是否激活。
+    DeletionAuditLog:
+      type: object
+      required: [id, action, actor, timestamp, requestId]
+      description: 删除操作审计日志。
+      properties:
+        id:
+          type: string
+          description: 日志ID。
+        action:
+          type: string
+          enum: [create, update, approve, reject, execute, restore, cancel, proof]
+          description: 操作类型。
+        actor:
+          type: object
+          required: [id, name, email]
+          description: 操作人信息。
+          properties:
+            id:
+              type: string
+              description: 用户ID。
+            name:
+              type: string
+              description: 用户姓名。
+            email:
+              type: string
+              format: email
+              description: 用户邮箱。
+        timestamp:
+          type: string
+          format: date-time
+          description: 操作时间。
+        requestId:
+          type: string
+          description: 关联的删除请求ID。
+        previousValues:
+          type: object
+          additionalProperties: true
+          description: 修改前的值。
+        newValues:
+          type: object
+          additionalProperties: true
+          description: 修改后的值。
+        ipAddress:
+          type: string
+          description: IP地址。
+        userAgent:
+          type: string
+          description: 用户代理。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 审计元数据。
+security:
+  - BearerAuth: []

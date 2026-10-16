@@ -1,0 +1,76 @@
+openapi: 3.1.0
+x-contract-scope: current
+info:
+  title: Referral API
+  version: '2026-07-11'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    当前用户推荐码接口定义。
+
+    - 对应接口文档：`API接口文档-用户端.md` 4.3
+    - 功能说明：`docs/features/REFERRAL-CODE-FEATURE.md`
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+tags:
+  - name: Referrals
+    description: 推荐码生成与管理
+paths:
+  /api/referral/generate:
+    post:
+      operationId: generateReferralCode
+      summary: 为当前用户生成推荐码
+      description: 当当前账户尚无推荐码时，由后端生成并分配专属推荐码。
+      tags:
+        - Referrals
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              maxProperties: 0
+      responses:
+        '200':
+          description: 推荐码生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateReferralCodeResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    GeneratedReferralCode:
+      type: object
+      required: [code, maxUses, rewardAmount, createdAt]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        maxUses:
+          type: number
+          description: 最大使用次数；0 表示不限，-1 表示停用。
+        rewardAmount:
+          type: number
+        createdAt:
+          type: string
+    GenerateReferralCodeResponse:
+      type: object
+      required: [success, referralCode]
+      properties:
+        success:
+          type: boolean
+          const: true
+        referralCode:
+          $ref: '#/components/schemas/GeneratedReferralCode'
+security:
+  - BearerAuth: []

@@ -1,0 +1,345 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Folder Mutation and Fallback APIs
+  version: '2026-07-10'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    前端项目管理仍在调用的 Folder 兼容接口。`/user/user/*` 是现网主路径，
+    `/user/*` 仅在主路径返回 404 时回退。后端迁移到 REST Projects API 后可删除本契约。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+tags:
+  - name: Legacy Projects
+    description: 兼容现网 Folder 项目接口
+paths:
+  /api/user/user/createfolder:
+    post:
+      operationId: createLegacyFolder
+      summary: 创建项目
+      description: 使用现网 Folder 接口创建根项目。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyFolderCreateRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/user/createfolder:
+    post:
+      operationId: createLegacyFolderFallback
+      summary: 创建项目（历史回退路径）
+      description: 仅当主创建路径返回 404 时使用的历史兼容路径。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyFolderCreateRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/user/folderlist:
+    get:
+      operationId: getLegacyFolderListFallback
+      summary: 获取项目列表（历史回退路径）
+      description: 仅当主列表路径返回 404 时使用的历史兼容路径。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ParentId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Keyword'
+        - $ref: '#/components/parameters/Archive'
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/user/user/folderdetail/{id}:
+    get:
+      operationId: getLegacyFolderDetail
+      summary: 获取项目详情
+      description: 查询指定项目的详情、客户名称和层级信息。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FolderId'
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/user/folderdetail/{id}:
+    get:
+      operationId: getLegacyFolderDetailFallback
+      summary: 获取项目详情（历史回退路径）
+      description: 仅当主详情路径返回 404 时使用的历史兼容路径。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FolderId'
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/user/user/folderdel/{id}:
+    get:
+      operationId: deleteLegacyFolder
+      summary: 软删除项目
+      description: 现网兼容写接口；后续应迁移到 DELETE Projects API。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FolderId'
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderDeleteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/user/folderdel/{id}:
+    get:
+      operationId: deleteLegacyFolderFallback
+      summary: 软删除项目（历史回退路径）
+      description: 仅当主路径返回 404 时调用的兼容写接口。
+      tags: [Legacy Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FolderId'
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderDeleteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    FolderId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    ParentId:
+      name: parent_id
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 15
+    Keyword:
+      name: keyword
+      in: query
+      schema:
+        type: string
+    Archive:
+      name: archive
+      in: query
+      schema:
+        type: integer
+        enum: [0, 1]
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LegacyErrorResponse'
+    NotFound:
+      description: 项目不存在或无权访问
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LegacyErrorResponse'
+  schemas:
+    LegacyFolderCreateRequest:
+      type: object
+      required: [id, name, coustomer_name, parent_id]
+      properties:
+        id:
+          type: integer
+          const: 0
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        coustomer_name:
+          type: string
+          maxLength: 50
+        parent_id:
+          type: integer
+          minimum: 0
+    LegacyFolderItem:
+      type: object
+      required: [id, name, coustomer_name, parent_id, archive]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        coustomer_name:
+          type: string
+        parent_id:
+          type: integer
+        archive:
+          type: integer
+          enum: [0, 1]
+        child_count:
+          type: integer
+          minimum: 0
+        project_count:
+          type: integer
+          minimum: 0
+        has_children:
+          type: boolean
+        owner_id:
+          type: integer
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    LegacyFolderResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/LegacyFolderItem'
+    LegacyFolderListResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          required: [total, items]
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/LegacyFolderItem'
+    LegacyFolderDeleteResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          required: [id, is_del]
+          properties:
+            id:
+              type: integer
+            is_del:
+              type: integer
+              const: 1
+            deleted_at:
+              type: string
+    LegacyErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        msg:
+          type: string
+        message:
+          type: string

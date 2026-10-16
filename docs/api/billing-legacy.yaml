@@ -1,0 +1,374 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Billing API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网充值/流水 legacy 接口定义，用于与前端充值、账单、流水联调。
+
+    - 后端路径：`/recharge/*`、`/user/runningwater/list`、`/user/rechargelist`
+    - 代理后路径：`/api/recharge/*`、`/api/user/runningwater/list` 等
+    - 对应接口文档：`API接口文档-用户端.md`
+
+    历史说明：
+    - `/user/transactions`、`/user/balance` 接口已废弃（返回 404）。
+      用户余额请从 `user/detail` 获取；流水请用 `runningwater/list`。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy Billing
+    description: 兼容现网充值与流水接口
+paths:
+  /api/recharge/list:
+    get:
+      operationId: legacyGetRechargePackages
+      summary: 获取充值套餐列表
+      description: 返回可选的充值套餐列表（可能直接返回数组或 {data:[]} 嵌套，前端兼容）。
+      tags:
+        - Legacy Billing
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyRechargeListResponse'
+              examples:
+                success:
+                  summary: 成功示例
+                  value:
+                    code: 200
+                    msg: 成功
+                    data:
+                      - id: 1
+                        name: 基础套餐
+                        price: 50
+                        original_price: 60
+  /api/recharge/createorder:
+    post:
+      operationId: legacyCreateOrder
+      summary: 创建充值订单
+      description: 提交付款方式与金额，返回微信支付 code_url 与商户订单号。
+      tags:
+        - Legacy Billing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyCreateOrderRequest'
+      responses:
+        '200':
+          description: 订单创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyCreateOrderResponse'
+  /api/recharge/orderquery:
+    get:
+      operationId: legacyQueryOrderStatus
+      summary: 查询订单支付状态
+      description: |
+        通过 `order_no` 查询订单状态。响应 `data` 为支付状态码：
+        `0`=未支付，`1`=已支付，`2`=已关闭。
+      tags:
+        - Legacy Billing
+      parameters:
+        - name: order_no
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyOrderQueryResponse'
+  /api/recharge/rechargeconfig:
+    get:
+      operationId: legacyGetRechargeConfig
+      summary: 获取充值配置
+      description: 返回金额上下限、是否允许小数、赠送规则等充值配置。
+      tags:
+        - Legacy Billing
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyRechargeConfigResponse'
+  /api/user/runningwater/list:
+    get:
+      operationId: legacyGetRunningWaterList
+      summary: 获取账户流水列表
+      description: 分页获取账户变动流水记录，可选按类型筛选。
+      tags:
+        - Legacy Billing
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: 流水类型筛选（可选）。
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyRunningWaterListResponse'
+  /api/user/rechargelist:
+    get:
+      operationId: legacyGetRechargeList
+      summary: 获取充值记录列表
+      description: 分页获取历史充值记录。
+      tags:
+        - Legacy Billing
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyRechargeRecordListResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyRechargePackage:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        price:
+          type: number
+        original_price:
+          type: number
+          description: 原价（可选）。
+    LegacyRechargeListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        data:
+          type: array
+          description: 套餐列表（后端可能直接返回数组，前端兼容 data 嵌套）。
+          items:
+            $ref: '#/components/schemas/LegacyRechargePackage'
+    LegacyCreateOrderRequest:
+      type: object
+      description: 创建订单请求体（字段对应 RechargeRequest 类型，具体由后端约定）。
+      properties:
+        amount:
+          type: number
+        package_id:
+          type: number
+    LegacyCreateOrderResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        data:
+          type: object
+          required: [code_url, out_trade_no, message]
+          properties:
+            code_url:
+              type: string
+              description: 微信支付二维码链接。
+            out_trade_no:
+              type: string
+              description: 商户订单号。
+            message:
+              type: string
+    LegacyOrderQueryResponse:
+      type: object
+      required: [code, message, data]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: integer
+          enum: [0, 1, 2]
+          description: 'status=0 表示未支付，1 表示已支付，2 表示已关闭。'
+    LegacyRechargeConfig:
+      type: object
+      required:
+        - id
+        - min_amount
+        - max_amount
+        - allow_decimal
+        - min_bonus_eligible_amount
+        - enable_bonus
+        - is_enabled
+        - rate
+        - updated_at
+      properties:
+        id:
+          type: number
+        min_amount:
+          type: number
+        max_amount:
+          type: number
+        allow_decimal:
+          type: integer
+          enum: [0, 1]
+        min_bonus_eligible_amount:
+          type: number
+        enable_bonus:
+          type: integer
+          enum: [0, 1]
+        is_enabled:
+          type: integer
+          enum: [0, 1]
+        rate:
+          type: number
+        updated_at:
+          type: string
+    LegacyRechargeConfigResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyRechargeConfig'
+    LegacyRunningWaterRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        title:
+          type: string
+        link_id:
+          type: integer
+        type:
+          type: string
+        money:
+          type: number
+        balance:
+          type: number
+        pm:
+          type: integer
+        create_time:
+          type: string
+    LegacyRunningWaterListPayload:
+      type: object
+      required: [total, items]
+      properties:
+        total:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegacyRunningWaterRecord'
+    LegacyRunningWaterListResponse:
+      oneOf:
+        - $ref: '#/components/schemas/LegacyRunningWaterListPayload'
+        - type: object
+          required: [data]
+          properties:
+            code:
+              type: integer
+              enum: [0, 200]
+            msg:
+              type: string
+            message:
+              type: string
+            data:
+              $ref: '#/components/schemas/LegacyRunningWaterListPayload'
+    LegacyRechargeRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        order_no:
+          type: string
+        amount:
+          type: number
+        bonus_amount:
+          type: number
+        status:
+          type: integer
+        pay_time:
+          type: string
+        created_time:
+          type: string
+    LegacyRechargeRecordListPayload:
+      type: object
+      required: [total, items]
+      properties:
+        total:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegacyRechargeRecord'
+    LegacyRechargeRecordListResponse:
+      oneOf:
+        - $ref: '#/components/schemas/LegacyRechargeRecordListPayload'
+        - type: object
+          required: [data]
+          properties:
+            code:
+              type: integer
+              enum: [0, 200]
+            msg:
+              type: string
+            message:
+              type: string
+            data:
+              $ref: '#/components/schemas/LegacyRechargeRecordListPayload'

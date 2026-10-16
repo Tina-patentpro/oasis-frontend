@@ -1,0 +1,160 @@
+import { useMemo } from 'react'
+
+import { buildInputSectionProps, buildOutputSectionProps } from './section-props'
+
+export type InputSectionProps = ReturnType<typeof buildInputSectionProps>
+export type OutputSectionProps = ReturnType<typeof buildOutputSectionProps>
+
+type InputBuilderParams = Parameters<typeof buildInputSectionProps>[0]
+type OutputBuilderParams = Parameters<typeof buildOutputSectionProps>[0]
+
+type UseWorkspaceSectionPropsParams = InputBuilderParams & OutputBuilderParams
+
+export function useWorkspaceSectionProps({
+  inputPage,
+  inputSections,
+  layoutMode,
+  appliedLayout,
+  activePages,
+  destinations,
+  setInputPage,
+  setInputSection,
+  setLayoutMode,
+  handleInputFiles,
+  readHistoryToInput,
+  copyInput,
+  clearAllInputs,
+  startNewSession,
+  startNewSessionDisabled,
+  startNewSessionTooltip,
+  openQuickCreateProject,
+  projects,
+  selectedProjectId,
+  setSelectedProjectId,
+  sectionDefinitions,
+  apiDetail,
+  tabsLoadError,
+  onRetryLoadTabs,
+  generated,
+  isGenerating,
+  generationStatus,
+  renderMode,
+  canGenerate,
+  generateDisabled,
+  isAsyncWorkflow,
+  themeColor,
+  generate,
+  copyGenerated,
+  handleDownload,
+  handleNextStep,
+  setRenderMode,
+  downloadableCount,
+  performanceMetrics,
+  onFirstFrameMeasured,
+  onRenderMeasured,
+}: UseWorkspaceSectionPropsParams): {
+  inputSectionProps: InputSectionProps
+  outputSectionProps: OutputSectionProps
+} {
+  const inputSectionProps = useMemo(
+    () =>
+      buildInputSectionProps({
+        inputPage,
+        inputSections,
+        layoutMode,
+        appliedLayout,
+        activePages,
+        destinations,
+        setInputPage,
+        setInputSection,
+        setLayoutMode,
+        handleInputFiles,
+        readHistoryToInput,
+        copyInput,
+        clearAllInputs,
+        startNewSession,
+        startNewSessionDisabled,
+        startNewSessionTooltip,
+        openQuickCreateProject,
+        projects,
+        selectedProjectId,
+        setSelectedProjectId,
+        sectionDefinitions,
+        apiDetail,
+        tabsLoadError,
+        onRetryLoadTabs,
+      }),
+    [
+      appliedLayout,
+      clearAllInputs,
+      copyInput,
+      destinations,
+      handleInputFiles,
+      inputPage,
+      inputSections,
+      layoutMode,
+      openQuickCreateProject,
+      activePages,
+      projects,
+      readHistoryToInput,
+      startNewSession,
+      startNewSessionDisabled,
+      startNewSessionTooltip,
+      selectedProjectId,
+      setInputPage,
+      setInputSection,
+      setLayoutMode,
+      setSelectedProjectId,
+      sectionDefinitions,
+      apiDetail,
+      tabsLoadError,
+      onRetryLoadTabs,
+    ],
+  )
+
+  const outputSectionProps = useMemo(
+    () =>
+      buildOutputSectionProps({
+        generated,
+        isGenerating,
+        generationStatus,
+        renderMode,
+        appliedLayout,
+        canGenerate,
+        generateDisabled,
+        isAsyncWorkflow,
+        themeColor,
+        generate,
+        copyGenerated,
+        handleDownload,
+        handleNextStep,
+        setRenderMode,
+        downloadableCount,
+        performanceMetrics,
+        onFirstFrameMeasured,
+        onRenderMeasured,
+      }),
+    [
+      appliedLayout,
+      canGenerate,
+      copyGenerated,
+      themeColor,
+      generateDisabled,
+      isAsyncWorkflow,
+      handleDownload,
+      generate,
+      generated,
+      isGenerating,
+      generationStatus,
+      handleNextStep,
+      downloadableCount,
+      onFirstFrameMeasured,
+      onRenderMeasured,
+      performanceMetrics,
+      renderMode,
+      setRenderMode,
+    ],
+  )
+
+  return { inputSectionProps, outputSectionProps }
+}

@@ -1,0 +1,1136 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Workflow API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    Dify 工作流接口定义。
+
+    - 对应设计目标：3.a ~ 3.f
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §1
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Dify Workflow」
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Workflows
+    description: 工作流管理与执行接口
+  - name: Workflow Executions
+    description: 工作流执行记录与进度接口
+  - name: Workflow Presets
+    description: 工作流链式调用预设接口
+paths:
+  /api/workflows:
+    get:
+      operationId: getWorkflows
+      x-contract-scope: current
+      summary: 分页查询工作流目录
+      description: 按分类、关键字等条件分页检索当前租户可用的工作流，用于工作流中心列表页加载与搜索联想。
+      tags:
+        - Workflows
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          description: 工作流分类，由 CMS 配置。
+          schema:
+            type: string
+        - name: keyword
+          in: query
+          description: 名称、描述模糊搜索。
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/WorkflowSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+              examples:
+                default:
+                  summary: 工作流列表示例
+                  value:
+                    success: true
+                    data:
+                      items:
+                        - id: wf-legal-review
+                          name: 合同法律审查
+                          category: compliance
+                          description: 结合法律模板快速识别合同风险
+                          icon: https://cdn.example.com/icons/legal.svg
+                          tags: [法务, 合同, 审核]
+                          version: 5.3.0
+                          lastUpdatedAt: '2025-10-22T08:30:00Z'
+                          status: published
+                          visibility: team
+                        - id: wf-product-release
+                          name: 产品发布物料生成
+                          category: marketing
+                          description: 统一输出发布会 PPT、稿件与 FAQ
+                          icon: https://cdn.example.com/icons/product.svg
+                          tags: [市场, 发布]
+                          version: 2.1.0
+                          lastUpdatedAt: '2025-10-21T11:45:00Z'
+                          status: published
+                          visibility: organization
+                      pagination:
+                        page: 1
+                        pageSize: 20
+                        total: 12
+                        hasMore: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/workflows/{workflowId}:
+    get:
+      operationId: getWorkflowDetail
+      x-contract-scope: current
+      summary: 查看单个工作流详情
+      description: 返回指定工作流的完整配置、动态输入参数与执行成本信息，供详情页和编辑器基于此进行渲染。
+      tags:
+        - Workflows
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkflowDetail'
+              examples:
+                default:
+                  summary: 工作流详情示例
+                  value:
+                    success: true
+                    data:
+                      id: wf-patent-draft
+                      name: 专利权利要求生成
+                      category: patent
+                      description: 根据技术方案生成权利要求书草稿
+                      icon: https://cdn.example.com/icons/patent.svg
+                      tags: [专利, 工作流]
+                      version: '1.2.0'
+                      lastUpdatedAt: '2025-10-18T09:30:00Z'
+                      inputSchema:
+                        type: object
+                        properties:
+                          caseTitle:
+                            type: string
+                          problemStatement:
+                            type: string
+                      outputDescription: 返回主权利要求、从属权利要求及审核建议
+                      executionCost:
+                        credits: 12
+                        durationEstimate: PT2M
+                      createdAt: '2025-06-01T10:00:00Z'
+                      createdBy: admin@example.com
+                      isDeprecated: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/workflows/{workflowId}/execute:
+    post:
+      operationId: executeWorkflow
+      x-contract-scope: current
+      summary: 触发工作流执行
+      description: 根据提交的动态输入与附件立即启动工作流，返回执行 ID 供前端轮询结果与展示实时进度，适用于"立即运行""一键生成"等高频业务场景。
+      tags:
+        - Workflows
+      security:
+        - BearerAuth: []
+      x-performance:
+        p95LatencyMs: 2000
+        successRate: 0.995
+        concurrencyLimitPerUser: 3
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowExecutionRequest'
+            example:
+              inputs:
+                caseTitle: "无人机喷洒控制算法"
+                problemStatement: "需生成主权利要求与从属权利要求"
+                priority: "high"
+              attachments:
+                - field: "techReport"
+                  fileId: "file-123"
+                  fileName: "report.pdf"
+                  mimeType: "application/pdf"
+              projectId: "prj-2024-001"
+              metadata:
+                triggeredFrom: "workspace"
+      responses:
+        '202':
+          description: 已接受，返回执行标识。
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          executionId:
+                            type: string
+                          status:
+                            type: string
+                            enum: [queued, running]
+              example:
+                success: true
+                data:
+                  executionId: exec-789
+                  status: queued
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: 工作流执行冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  code: WF-409-01
+                  message: Workflow is already running
+  /api/workflow-executions/{executionId}:
+    get:
+      operationId: getWorkflowExecutionResult
+      x-contract-scope: current
+      summary: 查询工作流执行结果
+      description: 返回执行状态、生成内容、产出文件与原始输入，用于结果页或历史记录查看，支持基于历史任务自动回填参数。
+      tags:
+        - Workflow Executions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includeInputs
+          in: query
+          description: 是否包含原始输入数据
+          schema:
+            type: boolean
+            default: true
+        - name: includeSensitive
+          in: query
+          description: 是否包含敏感信息（需要管理员权限）
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkflowExecutionDetail'
+              example:
+                success: true
+                data:
+                  executionId: exec-789
+                  workflowId: wf-patent-draft
+                  status: completed
+                  startedAt: 2025-10-22T02:00:00Z
+                  completedAt: 2025-10-22T02:01:45Z
+                  triggeredBy: user@example.com
+                  projectId: prj-2024-001
+                  inputs:
+                    userInstruction: "请突出差异化创意点，并注明必须规避的对比文献。"
+                    caseTitle: "无人机喷洒控制算法"
+                    problemStatement: "需生成主权利要求与从属权利要求"
+                    priority: "high"
+                  inputsSnapshot:
+                    userInstruction: "请突出差异化创意点，并注明必须规避的对比文献。"
+                    caseTitle: "无人机***控制算法"
+                    problemStatement: "需生成主权利要求与从属权利要求"
+                    priority: "***"
+                  inputAttachments:
+                    - field: "techReport"
+                      fileId: "file-123"
+                      fileName: "report.pdf"
+                      mimeType: "application/pdf"
+                      size: 2048576
+                  outputs:
+                    mainClaim: 一种...
+                    dependentClaims:
+                      - 根据权利要求1所述的方法...
+                  documentSections:
+                    - id: section-main
+                      title: 主权利要求书
+                      text: |
+                        ## 主权利要求书
+
+                        一种无人机喷洒控制算法...
+                    - id: section-dependent
+                      title: 从属权利要求
+                      text: |
+                        | 序号 | 内容 |
+                        | --- | --- |
+                        | 1 | 根据权利要求1所述的方法... |
+                  files:
+                    - fileId: file-456
+                      fileName: claims.docx
+                      mimeType: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                      size: 23456
+                      url: https://oss.example.com/files/claims.docx
+                      downloadUrl: https://example.com/files/file-456
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/workflow-executions/{executionId}/progress:
+    get:
+      operationId: getWorkflowExecutionProgress
+      x-contract-scope: current
+      summary: 获取工作流执行进度
+      description: 轮询或长轮询接口，返回当前进度百分比与步骤信息。
+      tags:
+        - Workflow Executions
+      security:
+        - BearerAuth: []
+      x-performance:
+        pollIntervalRecommendedMs: 1000
+        p95LatencyMs: 150
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkflowExecutionProgress'
+              example:
+                success: true
+                data:
+                  status: running
+                  percent: 65
+                  currentStep: 生成主权利要求
+                  estimatedRemainingSeconds: 45
+                  steps:
+                    - id: draft
+                      label: 生成草稿
+                      status: completed
+                    - id: review
+                      label: 模型审核
+                      status: running
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/workflows/{workflowId}/executions:
+    get:
+      operationId: getWorkflowExecutions
+      x-contract-scope: current
+      summary: 获取工作流历史执行记录
+      description: 按时间倒序返回执行历史，包含输入摘要，可用于"快速重复执行"。
+      tags:
+        - Workflow Executions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: projectId
+          in: query
+          description: 过滤指定项目的执行记录。
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, running, completed, failed, cancelled]
+        - name: from
+          in: query
+          description: 起始时间（ISO8601）。
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: 结束时间（ISO8601）。
+          schema:
+            type: string
+            format: date-time
+        - name: includeInputsSummary
+          in: query
+          description: 是否包含输入摘要
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/WorkflowHistoryItem'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+              example:
+                success: true
+                data:
+                  items:
+                    - executionId: exec-789
+                      workflowId: wf-patent-draft
+                      triggeredBy: user@example.com
+                      triggeredAt: 2025-10-22T02:00:00Z
+                      status: completed
+                      projectId: prj-2024-001
+                      summary: 生成 10 条权利要求
+                      inputsSummary:
+                        caseTitle: "无人机喷洒控制算法"
+                        attachmentCount: 1
+                  pagination:
+                    page: 1
+                    pageSize: 20
+                    total: 3
+                    hasMore: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/workflow-presets:
+    get:
+      operationId: getWorkflowPresets
+      x-contract-scope: current
+      summary: 获取工作流链式调用预设
+      description: 用于"下一步自动填充"功能，返回预设的参数映射关系。
+      tags:
+        - Workflow Presets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sourceWorkflowId
+          in: query
+          schema:
+            type: string
+        - name: targetWorkflowId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/WorkflowPreset'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/workflow-chains:
+    post:
+      operationId: createWorkflowChain
+      x-contract-scope: current
+      summary: 保存工作流链定义
+      description: 允许管理员或团队负责人配置多个工作流的参数映射链路。
+      tags:
+        - Workflow Presets
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, steps]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                visibility:
+                  type: string
+                  enum: [private, team, global]
+                  default: private
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    required: [workflowId]
+                    properties:
+                      workflowId:
+                        type: string
+                      mapping:
+                        type: array
+                        description: 输入字段映射，source 表示上一步输出字段。
+                        items:
+                          type: object
+                          required: [targetField, source]
+                          properties:
+                            targetField:
+                              type: string
+                            source:
+                              type: string
+                            transform:
+                              type: string
+                              description: 可选的数据转换表达式。
+            example:
+              name: "专利撰写链"
+              description: "权利要求生成后自动进入说明书写作"
+              visibility: team
+              steps:
+                - workflowId: "wf-patent-draft"
+                - workflowId: "wf-specification"
+                  mapping:
+                    - targetField: "draftInput"
+                      source: "prev.outputs.dependentClaims"
+      responses:
+        '201':
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkflowChain'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: 标准化的接口响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息，成功时为空。
+      required: [success]
+    ErrorInfo:
+      type: object
+      description: 统一的错误结构。
+      properties:
+        code:
+          type: string
+          description: 业务错误码。
+        message:
+          type: string
+          description: 面向用户或开发者的错误说明。
+        details:
+          type: object
+          nullable: true
+          description: 附加调试信息或上下文。
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            success:
+              enum: [false]
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码，从 1 开始。
+        pageSize:
+          type: integer
+          description: 每页返回的记录条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页数据。
+    WorkflowSummary:
+      type: object
+      required: [id, name, category, description, icon]
+      description: 工作流概要信息。
+      properties:
+        id:
+          type: string
+          description: 工作流唯一标识。
+        name:
+          type: string
+          description: 工作流名称。
+        category:
+          type: string
+          description: 业务分类。
+        description:
+          type: string
+          description: 概要介绍。
+        icon:
+          type: string
+          description: 图标 URL
+        tags:
+          type: array
+          items:
+            type: string
+          description: 业务标签集合。
+        version:
+          type: string
+          description: 当前版本号。
+        lastUpdatedAt:
+          type: string
+          format: date-time
+          description: 最近一次更新时间。
+    WorkflowDetail:
+      allOf:
+        - $ref: '#/components/schemas/WorkflowSummary'
+        - type: object
+          required: [inputSchema, createdAt, createdBy]
+          properties:
+            inputSchema:
+              type: object
+              description: JSON Schema，描述动态输入参数。
+              additionalProperties: true
+            outputDescription:
+              type: string
+              description: 输出结果说明。
+            executionCost:
+              type: object
+              description: 执行成本估算
+              properties:
+                credits:
+                  type: number
+                  description: 扣费额度
+                durationEstimate:
+                  type: string
+                  description: 预计耗时。
+            createdAt:
+              type: string
+              format: date-time
+              description: 创建时间。
+            createdBy:
+              type: string
+              description: 创建人。
+            isDeprecated:
+              type: boolean
+              default: false
+              description: 是否已弃用。
+    WorkflowExecutionRequest:
+      type: object
+      required: [inputs]
+      description: 触发工作流执行的请求体。
+      properties:
+        inputs:
+          type: object
+          description: 动态参数，符合 inputSchema。
+          additionalProperties: true
+          example:
+            userInstruction: "请描述本次撰写的重点与必须遵循的限制。"
+            caseTitle: "协作机器人阻尼结构改进"
+            problemStatement: "生成独立与从属权利要求，并给出差异化要点"
+        attachments:
+          type: array
+          description: 附件上传配置列表。
+          items:
+            type: object
+            required: [field, fileId]
+            properties:
+              field:
+                type: string
+                description: 引用输入表单字段名。
+              fileId:
+                type: string
+                description: 文件存储标识。
+              fileName:
+                type: string
+                description: 原始文件名。
+              mimeType:
+                type: string
+                description: MIME 类型。
+        projectId:
+          type: string
+          description: 可选，关联项目。
+        presetId:
+          type: string
+          description: 可选，链式调用预设。
+        metadata:
+          type: object
+          description: 扩展字段（例如来源页面、触发方式）。
+    WorkflowExecutionDetail:
+      type: object
+      required: [executionId, workflowId, status, startedAt]
+      description: 工作流执行详情，包含原始输入和输出信息。
+      properties:
+        executionId:
+          type: string
+          description: 执行记录唯一标识。
+        workflowId:
+          type: string
+          description: 对应的工作流 ID。
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+          description: 当前执行状态。
+        startedAt:
+          type: string
+          format: date-time
+          description: 启动时间。
+        completedAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: 完成或终止时间。
+        triggeredBy:
+          type: string
+          description: 触发人账号。
+        projectId:
+          type:
+            - string
+            - 'null'
+          description: 关联项目 ID。
+        inputs:
+          type: object
+          description: 原始输入参数快照。
+          additionalProperties: true
+        inputsSnapshot:
+          type: object
+          description: 脱敏后的输入摘要。
+          additionalProperties: true
+        inputAttachments:
+          type: array
+          description: 输入附件信息。
+          items:
+            $ref: '#/components/schemas/InputAttachment'
+        outputs:
+          type: object
+          additionalProperties: true
+          description: 执行输出，键值取决于工作流定义。
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowExecutionFile'
+          description: 生成的文件列表。
+        documentSections:
+          type: array
+          description: 富文本段落信息，由后端预先拆解好供前端渲染。
+          items:
+            $ref: '#/components/schemas/WorkflowOutputSection'
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败时的错误信息。
+        resourceUsage:
+          type: object
+          description: 资源使用情况。
+          properties:
+            creditsConsumed:
+              type: number
+              description: 消费的额度。
+            tokensUsed:
+              type: integer
+              description: 使用的token数量。
+            executionDuration:
+              type: integer
+              description: 执行时长（毫秒）。
+        privacySettings:
+          type: object
+          description: 隐私设置。
+          properties:
+            inputsMasked:
+              type: boolean
+              description: 输入是否已脱敏。
+            sensitiveFields:
+              type: array
+              items:
+                type: string
+              description: 敏感字段列表。
+    InputAttachment:
+      type: object
+      description: 输入附件信息。
+      properties:
+        field:
+          type: string
+          description: 引用的输入字段名。
+        fileId:
+          type: string
+          description: 文件ID。
+        fileName:
+          type: string
+          description: 原始文件名。
+        mimeType:
+          type: string
+          description: MIME类型。
+        size:
+          type: integer
+          description: 文件大小（字节）。
+        checksum:
+          type: string
+          description: 文件校验和。
+    WorkflowExecutionFile:
+      type: object
+      description: 工作流执行生成的文件。
+      properties:
+        fileId:
+          type: string
+          description: 文件标识。
+        fileName:
+          type: string
+          description: 文件名称。
+        mimeType:
+          type: string
+          description: MIME 类型。
+        size:
+          type: integer
+          description: 文件大小，单位字节。
+        url:
+          type: string
+          description: 下载地址。
+        createdAt:
+          type: string
+          format: date-time
+          description: 生成时间。
+    WorkflowOutputSection:
+      type: object
+      description: 已格式化的输出文本片段，供前端以富文本渲染。
+      properties:
+        id:
+          type: string
+          description: 片段唯一标识。
+        title:
+          type: string
+          description: 片段标题（可选）。
+        order:
+          type: integer
+          description: 推荐展示顺序，默认为数组顺序。
+        text:
+          type: string
+          description: Markdown 富文本内容。
+        html:
+          type: string
+          description: 可选 HTML 内容，后端需保证已过滤安全风险。
+    WorkflowExecutionProgress:
+      type: object
+      required: [status, percent]
+      description: 工作流执行实时进度。
+      properties:
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+          description: 当前步骤状态。
+        percent:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 整体进度百分比。
+        estimatedRemainingSeconds:
+          type:
+            - number
+            - 'null'
+          description: 预计剩余秒数，未知时为 null。
+        currentStep:
+          type:
+            - string
+            - 'null'
+          description: 当前执行到的步骤 ID。
+        steps:
+          type: array
+          description: 各步骤的执行详情。
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 步骤唯一标识。
+              label:
+                type: string
+                description: 步骤展示名称。
+              status:
+                type: string
+                enum: [pending, running, completed, failed, skipped]
+                description: 步骤状态。
+              startedAt:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: 步骤开始时间。
+              completedAt:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: 步骤结束时间。
+    WorkflowHistoryItem:
+      type: object
+      description: 工作流执行历史记录，包含输入摘要。
+      properties:
+        executionId:
+          type: string
+          description: 执行 ID。
+        workflowId:
+          type: string
+          description: 工作流 ID。
+        triggeredBy:
+          type: string
+          description: 触发人。
+        triggeredAt:
+          type: string
+          format: date-time
+          description: 触发时间。
+        status:
+          type: string
+          description: 执行状态。
+        projectId:
+          type:
+            - string
+            - 'null'
+          description: 关联项目 ID。
+        summary:
+          type: string
+          description: 本次执行输出摘要。
+        inputsSummary:
+          type: object
+          description: 输入摘要信息。
+          properties:
+            fieldCount:
+              type: integer
+              description: 输入字段数量。
+            attachmentCount:
+              type: integer
+              description: 附件数量。
+            sampleFields:
+              type: object
+              additionalProperties: true
+              description: 示例字段值（脱敏）。
+        resourceUsage:
+          type: object
+          description: 资源使用摘要。
+          properties:
+            creditsConsumed:
+              type: number
+              description: 消费的额度。
+            duration:
+              type: integer
+              description: 执行时长（秒）。
+    WorkflowPreset:
+      type: object
+      description: 工作流链式调用预设。
+      properties:
+        id:
+          type: string
+          description: 预设 ID。
+        name:
+          type: string
+          description: 预设名称。
+        description:
+          type: string
+          description: 预设说明。
+        sourceWorkflowId:
+          type: string
+          description: 来源工作流 ID。
+        targetWorkflowId:
+          type: string
+          description: 目标工作流 ID。
+        mappingRules:
+          type: array
+          description: 字段映射规则列表。
+          items:
+            type: object
+            required: [targetField, sourceField]
+            properties:
+              targetField:
+                type: string
+                description: 目标字段。
+              sourceField:
+                type: string
+                description: 来源字段。
+              transform:
+                type: string
+                description: 可选转换表达式。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最近更新时间。
+    WorkflowChain:
+      type: object
+      description: 工作流链路定义。
+      properties:
+        id:
+          type: string
+          description: 链 ID。
+        name:
+          type: string
+          description: 链名称。
+        description:
+          type: string
+          description: 链描述。
+        visibility:
+          type: string
+          enum: [private, team, global]
+          description: 可见范围。
+        steps:
+          type: array
+          description: 链中每一步的工作流映射。
+          items:
+            type: object
+            properties:
+              workflowId:
+                type: string
+                description: 工作流 ID。
+              mapping:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    targetField:
+                      type: string
+                      description: 目标字段。
+                    source:
+                      type: string
+                      description: 来源字段表达式。
+                    transform:
+                      type: string
+                      description: 可选转换表达式。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        createdBy:
+          type: string
+          description: 创建人。
+security:
+  - BearerAuth: []

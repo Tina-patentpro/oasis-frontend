@@ -1,0 +1,180 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Folder List API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网项目列表（Folder）legacy 接口定义，用于与前端项目管理区联调。
+
+    - 对应接口文档：`API接口文档-用户端.md` 7.2
+    - 对应后端路径：`/user/user/folderlist`
+    - 代理后路径：`/api/user/user/folderlist`
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy Projects
+    description: 兼容现网 Folder 项目列表接口
+paths:
+  /api/user/user/folderlist:
+    get:
+      operationId: getLegacyFolderList
+      summary: 获取项目列表（分页/搜索/筛选）
+      description: |
+        获取项目列表，支持分页、关键字搜索、归档筛选和子项目懒加载。
+
+        规则：
+        - `keyword` 会先做 trim，空字符串不参与过滤
+        - 默认排序 `id DESC`
+        - 先过滤后分页，`data.total` 为过滤后的总数
+      tags:
+        - Legacy Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: parent_id
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: 父项目 ID，`0` 表示根项目。
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: 页码，从 1 开始。
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+          description: 每页数量，范围 `1-100`。
+        - name: keyword
+          in: query
+          schema:
+            type: string
+          description: 关键字搜索，匹配 `name` 与 `coustomer_name`。
+        - name: archive
+          in: query
+          schema:
+            type: integer
+            enum: [0, 1]
+          description: 归档状态筛选，`0=进行中`，`1=已归档`。
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyFolderListResponse'
+              examples:
+                success:
+                  summary: 成功示例
+                  value:
+                    code: 200
+                    msg: 成功
+                    data:
+                      total: 45
+                      items:
+                        - id: 1
+                          name: 专利项目A
+                          coustomer_name: 客户甲
+                          parent_id: 0
+                          archive: 0
+                          child_count: 2
+                          project_count: 8
+                          has_children: true
+                          created_at: '2026-02-10T10:00:00'
+                          updated_at: '2026-02-10T10:00:00'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyFolderListResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          description: 业务码，兼容 `0` 或 `200`。
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          required: [total, items]
+          properties:
+            total:
+              type: integer
+              minimum: 0
+              description: 过滤后的总记录数。
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/LegacyFolderItem'
+    LegacyFolderItem:
+      type: object
+      required:
+        - id
+        - name
+        - coustomer_name
+        - parent_id
+        - archive
+        - child_count
+        - project_count
+        - has_children
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        coustomer_name:
+          type: string
+        parent_id:
+          type: integer
+        archive:
+          type: integer
+          enum: [0, 1]
+        child_count:
+          type: integer
+          minimum: 0
+        project_count:
+          type: integer
+          minimum: 0
+        has_children:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    LegacyErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        msg:
+          type: string
+        message:
+          type: string

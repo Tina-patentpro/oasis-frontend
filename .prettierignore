@@ -1,0 +1,7 @@
+node_modules
+dist
+.dist
+coverage
+.husky
+.vscode
+audit-report.json

@@ -1,0 +1,445 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: 性能监控 API
+  version: 1.0.0
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: 用户性能数据收集和查询接口
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+
+paths:
+  /api/performance/metrics:
+    post:
+      summary: 提交性能指标
+      description: 客户端自动提交收集到的性能数据
+      operationId: submitPerformanceMetrics
+      x-contract-scope: current
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - metrics
+                - grade
+                - url
+              properties:
+                metrics:
+                  type: object
+                  required:
+                    - FCP
+                    - LCP
+                    - TTFB
+                    - CLS
+                    - FID
+                  properties:
+                    FCP:
+                      type: number
+                      description: 首次内容绘制时间（毫秒）
+                      example: 1200
+                    LCP:
+                      type: number
+                      description: 最大内容绘制时间（毫秒）
+                      example: 2500
+                    TTFB:
+                      type: number
+                      description: 首字节时间（毫秒）
+                      example: 300
+                    CLS:
+                      type: number
+                      description: 累积布局偏移
+                      example: 0.05
+                    FID:
+                      type: number
+                      description: 首次输入延迟（毫秒）
+                      example: 50
+                grade:
+                  type: string
+                  enum: [excellent, good, fair, poor]
+                  description: 性能等级
+                  example: good
+                url:
+                  type: string
+                  description: 页面URL
+                  example: https://example.com/page
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 记录ID
+        '401':
+          description: 未授权
+        '500':
+          description: 服务器错误
+
+  /api/performance/records:
+    get:
+      summary: 查询性能记录
+      description: 管理员查询所有用户的性能记录
+      operationId: getPerformanceRecords
+      x-contract-scope: current
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 开始日期 (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 结束日期 (YYYY-MM-DD)
+        - name: userId
+          in: query
+          schema:
+            type: string
+          description: 用户ID（可选，筛选特定用户）
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+          description: 每页记录数
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: 偏移量
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      records:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PerformanceRecord'
+                      total:
+                        type: integer
+                        description: 总记录数
+                        example: 1500
+        '401':
+          description: 未授权
+        '403':
+          description: 无权限（仅管理员）
+        '500':
+          description: 服务器错误
+
+  /api/performance/statistics:
+    get:
+      summary: 获取性能统计信息
+      description: 获取指定时间范围内的性能统计数据
+      operationId: getPerformanceStatistics
+      x-contract-scope: current
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 开始日期 (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 结束日期 (YYYY-MM-DD)
+      responses:
+        '200':
+          description: 统计成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/PerformanceStatistics'
+        '401':
+          description: 未授权
+        '403':
+          description: 无权限（仅管理员）
+        '500':
+          description: 服务器错误
+
+  /api/performance/slowest-pages:
+    get:
+      summary: 获取最慢的页面
+      description: 获取平均加载时间最慢的页面列表
+      operationId: getSlowestPages
+      x-contract-scope: current
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 开始日期 (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 结束日期 (YYYY-MM-DD)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          description: 返回页面数量
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          description: 页面URL
+                        averageLCP:
+                          type: number
+                          description: 平均LCP时间
+                        averageFCP:
+                          type: number
+                          description: 平均FCP时间
+                        count:
+                          type: integer
+                          description: 记录数量
+        '401':
+          description: 未授权
+        '403':
+          description: 无权限（仅管理员）
+        '500':
+          description: 服务器错误
+
+  /api/performance/cleanup:
+    delete:
+      summary: 清理过期数据
+      description: 删除7天前的性能数据（管理员操作）
+      operationId: cleanupExpiredData
+      x-contract-scope: current
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 清理成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      deletedCount:
+                        type: integer
+                        description: 删除的记录数
+                        example: 523
+        '401':
+          description: 未授权
+        '403':
+          description: 无权限（仅管理员）
+        '500':
+          description: 服务器错误
+
+  /api/performance/clear-all:
+    delete:
+      summary: 清除所有数据
+      description: 删除所有性能数据（管理员操作，谨慎使用）
+      operationId: clearAllPerformanceData
+      x-contract-scope: deferred
+      x-deferred-reason: destructive-admin-operation
+      tags:
+        - Performance
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 清除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      deletedCount:
+                        type: integer
+                        description: 删除的记录数
+                        example: 15234
+        '401':
+          description: 未授权
+        '403':
+          description: 无权限（仅管理员）
+        '500':
+          description: 服务器错误
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PerformanceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 记录ID
+        userId:
+          type: string
+          description: 用户ID（可选）
+        timestamp:
+          type: integer
+          description: 时间戳（毫秒）
+          example: 1698765432000
+        date:
+          type: string
+          description: 日期字符串
+          example: '2025-10-29'
+        metrics:
+          type: object
+          properties:
+            FCP:
+              type: number
+              description: 首次内容绘制时间（毫秒）
+            LCP:
+              type: number
+              description: 最大内容绘制时间（毫秒）
+            TTFB:
+              type: number
+              description: 首字节时间（毫秒）
+            CLS:
+              type: number
+              description: 累积布局偏移
+            FID:
+              type: number
+              description: 首次输入延迟（毫秒）
+        grade:
+          type: string
+          enum: [excellent, good, fair, poor]
+          description: 性能等级
+        url:
+          type: string
+          description: 页面URL
+        userAgent:
+          type: string
+          description: 用户代理字符串
+
+    PerformanceStatistics:
+      type: object
+      properties:
+        totalRecords:
+          type: integer
+          description: 总记录数
+          example: 1500
+        averageMetrics:
+          type: object
+          description: 平均性能指标
+          properties:
+            FCP:
+              type: number
+            LCP:
+              type: number
+            TTFB:
+              type: number
+            CLS:
+              type: number
+            FID:
+              type: number
+        gradeDistribution:
+          type: object
+          description: 性能等级分布
+          properties:
+            excellent:
+              type: integer
+              description: 优秀等级数量
+            good:
+              type: integer
+              description: 良好等级数量
+            fair:
+              type: integer
+              description: 一般等级数量
+            poor:
+              type: integer
+              description: 差等级数量
+
+tags:
+  - name: Performance
+    description: 性能监控相关接口

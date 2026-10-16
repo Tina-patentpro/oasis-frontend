@@ -1,0 +1,63 @@
+# ESLint 警告清单 (优化前)
+## 生成时间: 2025-10-21 下午7:08
+## 总计: 11个警告，0个错误
+
+### 📊 警告分类统计
+- setState 在 effect 中: 5个
+- 使用前声明的变量: 1个
+- JSX中修改 ref 对象: 1个
+- 未使用的 eslint-disable: 1个
+
+---
+
+### 🏷️ 详细警告列表
+
+#### 1. setState in effect 警告 (5个)
+**文件**: src/app/providers/LayoutProvider.tsx:51:5
+**类型**: react-hooks/set-state-in-effect
+**描述**: 在 useEffect 中同步调用 setState
+
+**文件**: src/components/QuickCreateProjectDialog.tsx:25:7
+**类型**: react-hooks/set-state-in-effect
+**描述**: 在 useEffect 中同步调用 setState
+
+**文件**: src/components/chat/hooks/useInstructionLibrary.ts:297:7
+**类型**: react-hooks/set-state-in-effect
+**描述**: 在 useEffect 中同步调用 setState
+
+**文件**: src/components/chat/hooks/useInstructionLibrary.ts:305:7
+**类型**: react-hooks/set-state-in-effect
+**描述**: 在 useEffect 中同步调用 setState
+
+**文件**: src/hooks/useStreamGenerate.ts:154:7
+**类型**: react-hooks/set-state-in-effect
+**描述**: 在 useEffect 中同步调用 setState
+
+#### 2. 使用前声明的变量 (1个)
+**文件**: src/components/ConversationSettingsDialog.tsx:215:43
+**类型**: react-hooks/immutability
+**描述**: handleMouseUp 在声明前被使用
+
+#### 3. JSX中修改 ref 对象 (1个)
+**文件**: src/components/workspace/LeftSidebar.tsx:339:35
+**类型**: react-hooks/immutability
+**描述**: sessionMenuRefs.current 在 JSX 中被修改
+
+#### 4. 未使用的 eslint-disable (1个)
+**文件**: src/modules/workspace/WorkspaceApp.tsx:63:3
+**类型**: unused eslint-disable directive
+**描述**: eslint-disable-next-line react-hooks/set-state-in-effect 未生效
+
+---
+
+### 🎯 优化目标
+- ✅ **Phase 1**: 修复所有 11 个警告，确保零告警
+- 🔄 **Phase 2**: 类型检查已通过，无需额外优化
+- 🚀 **Phase 3**: 添加构建分析脚本和性能监控基础
+
+### 📈 改进计划
+1. 移除未使用的 eslint-disable 指令
+2. 重构 effect 中的 setState 调用
+3. 修复变量声明顺序问题
+4. 解决 ref 对象修改问题
+5. 添加完整的错误边界和监控

@@ -1,0 +1,858 @@
+openapi: 3.0.3
+x-contract-scope: current
+info:
+  title: 运营状态上报API
+  description: 系统运营状态监控和数据上报接口
+  version: 1.0.0
+  contact:
+    name: 运营监控团队
+    email: ops@monitor.demo-platform.cn
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://staging-api.demo-platform.cn
+    description: 测试环境
+  - url: http://localhost:3000
+    description: 开发环境
+
+paths:
+  /api/ops/status:
+    post:
+      tags:
+        - 运营状态
+      summary: 上报系统运营状态
+      description: 收集和上报系统各个组件的运营状态数据
+      operationId: reportStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusReportRequest'
+            example:
+              system_status:
+                status: "healthy"
+                timestamp: "2025-10-24T12:58:30.000Z"
+                uptime: 86400
+                version: "v1.0.0"
+                environment: "production"
+      responses:
+        '200':
+          description: 成功接收状态数据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusReportResponse'
+              example:
+                response:
+                  status: "success"
+                  message: "Data collected successfully"
+                  timestamp: "2025-10-24T12:58:30.000Z"
+                  request_id: "req_123456789"
+                data:
+                  system_status:
+                    status: "healthy"
+                    timestamp: "2025-10-24T12:58:30.000Z"
+                    uptime: 86400
+                    version: "v1.0.0"
+                    environment: "production"
+                  services:
+                    - name: "api-gateway"
+                      status: "healthy"
+                      response_time: 45
+                      error_rate: 0.1
+                      last_check: "2025-10-24T12:58:25.000Z"
+                  database:
+                    status: "connected"
+                    response_time: 12
+                    connection_pool: 0.7
+                    slow_queries: []
+                  cache:
+                    status: "healthy"
+                    hit_rate: 95.2
+                    miss_rate: 4.8
+                    memory_usage: 67.3
+                  metrics:
+                    cpu_usage:
+                      current: 45.2
+                      average: 42.8
+                      max: 78.5
+                    memory_usage:
+                      current: 67.3
+                      average: 65.1
+                      max: 85.2
+                    disk_usage:
+                      current: 45.7
+                      available: 127.3
+                    network_io:
+                      bytes_in: 1048576
+                      bytes_out: 2097152
+                    response_time:
+                      p50: 45
+                      p95: 78
+                      p99: 120
+                      average: 52
+                  errors: []
+                  business_metrics:
+                    active_users:
+                      current: 1250
+                      peak_24h: 2100
+                      peak_7d: 1800
+                    request_count:
+                      total: 150000
+                      success: 148500
+                      error: 1500
+                      rate_per_second: 1.7
+                    conversion_metrics:
+                      registration_rate: 12.5
+                      file_success_rate: 98.2
+                    user_satisfaction:
+                      score: 4.6
+                      feedback_count: 234
+                  monitoring_config:
+                    collection_interval: 60
+                    retention_period: 30
+                    alert_thresholds:
+                      cpu_usage: 80
+                      memory_usage: 85
+                      disk_usage: 90
+                      response_time: 500
+                      error_rate: 5.0
+                metadata:
+                  version: "v1.0"
+                  timestamp: "2025-10-24T12:58:30.000Z"
+                  processing_time: 15
+                  data_source: "system_monitor"
+                  next_collection: "2025-10-24T12:59:30.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/ops/health:
+    get:
+      tags:
+        - 运营状态
+      summary: 获取系统健康状态
+      description: 获取系统整体健康状态简要信息
+      operationId: getHealthStatus
+      responses:
+        '200':
+          description: 系统健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+              example:
+                status: "healthy"
+                timestamp: "2025-10-24T12:58:30.000Z"
+                services:
+                  api-gateway: "healthy"
+                  database: "healthy"
+                  cache: "healthy"
+                uptime: 86400
+                version: "v1.0.0"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    StatusReportRequest:
+      type: object
+      required:
+        - system_status
+      properties:
+        system_status:
+          $ref: '#/components/schemas/SystemStatus'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceStatus'
+        database:
+          $ref: '#/components/schemas/DatabaseStatus'
+        cache:
+          $ref: '#/components/schemas/CacheStatus'
+        metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorInfo'
+        business_metrics:
+          $ref: '#/components/schemas/BusinessMetrics'
+        monitoring_config:
+          $ref: '#/components/schemas/MonitoringConfig'
+
+    SystemStatus:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+        - version
+        - environment
+      properties:
+        status:
+          type: string
+          enum: [healthy, warning, error, maintenance]
+          description: 系统整体状态
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 格式时间戳
+        uptime:
+          type: integer
+          description: 系统运行时间（秒）
+        version:
+          type: string
+          description: 系统版本号
+        environment:
+          type: string
+          enum: [development, staging, production]
+          description: 环境
+
+    ServiceStatus:
+      type: object
+      required:
+        - name
+        - status
+        - response_time
+        - error_rate
+        - last_check
+      properties:
+        name:
+          type: string
+          description: 服务名称
+        status:
+          type: string
+          enum: [healthy, warning, error, maintenance]
+          description: 服务状态
+        response_time:
+          type: number
+          description: 响应时间（毫秒）
+        error_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 错误率（百分比）
+        last_check:
+          type: string
+          format: date-time
+          description: 最后检查时间
+
+    DatabaseStatus:
+      type: object
+      required:
+        - status
+        - response_time
+        - connection_pool
+        - slow_queries
+      properties:
+        status:
+          type: string
+          enum: [connected, disconnected, error]
+          description: 数据库连接状态
+        response_time:
+          type: number
+          description: 响应时间（毫秒）
+        connection_pool:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: 连接池使用率
+        slow_queries:
+          type: array
+          items:
+            type: object
+            properties:
+              query:
+                type: string
+                description: 查询语句
+              duration:
+                type: number
+                description: 执行时间（毫秒）
+          description: 慢查询列表
+
+    CacheStatus:
+      type: object
+      required:
+        - status
+        - hit_rate
+        - miss_rate
+        - memory_usage
+      properties:
+        status:
+          type: string
+          enum: [healthy, warning, error]
+          description: 缓存系统状态
+        hit_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 命中率（百分比）
+        miss_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 未命中率（百分比）
+        memory_usage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 内存使用率（百分比）
+
+    PerformanceMetrics:
+      type: object
+      required:
+        - cpu_usage
+        - memory_usage
+        - disk_usage
+        - network_io
+        - response_time
+      properties:
+        cpu_usage:
+          $ref: '#/components/schemas/CpuMetrics'
+        memory_usage:
+          $ref: '#/components/schemas/MemoryMetrics'
+        disk_usage:
+          $ref: '#/components/schemas/DiskMetrics'
+        network_io:
+          $ref: '#/components/schemas/NetworkMetrics'
+        response_time:
+          $ref: '#/components/schemas/ResponseTimeMetrics'
+
+    CpuMetrics:
+      type: object
+      required:
+        - current
+        - average
+        - max
+      properties:
+        current:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 当前CPU使用率（百分比）
+        average:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 平均CPU使用率（百分比）
+        max:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 最大CPU使用率（百分比）
+
+    MemoryMetrics:
+      type: object
+      required:
+        - current
+        - average
+        - max
+      properties:
+        current:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 当前内存使用率（百分比）
+        average:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 平均内存使用率（百分比）
+        max:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 最大内存使用率（百分比）
+
+    DiskMetrics:
+      type: object
+      required:
+        - current
+        - available
+      properties:
+        current:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 当前磁盘使用率（百分比）
+        available:
+          type: number
+          minimum: 0
+          description: 可用磁盘空间（GB）
+
+    NetworkMetrics:
+      type: object
+      required:
+        - bytes_in
+        - bytes_out
+      properties:
+        bytes_in:
+          type: integer
+          minimum: 0
+          description: 网络输入字节数
+        bytes_out:
+          type: integer
+          minimum: 0
+          description: 网络输出字节数
+
+    ResponseTimeMetrics:
+      type: object
+      required:
+        - p50
+        - p95
+        - p99
+        - average
+      properties:
+        p50:
+          type: number
+          minimum: 0
+          description: 50%分位数响应时间（毫秒）
+        p95:
+          type: number
+          minimum: 0
+          description: 95%分位数响应时间（毫秒）
+        p99:
+          type: number
+          minimum: 0
+          description: 99%分位数响应时间（毫秒）
+        average:
+          type: number
+          minimum: 0
+          description: 平均响应时间（毫秒）
+
+    ErrorInfo:
+      type: object
+      required:
+        - type
+        - count
+        - last_occurred
+        - details
+      properties:
+        type:
+          type: string
+          description: 错误类型
+        count:
+          type: integer
+          minimum: 0
+          description: 错误数量
+        last_occurred:
+          type: string
+          format: date-time
+          description: 最后发生时间
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+          description: 错误详情列表
+
+    ErrorDetail:
+      type: object
+      required:
+        - error_id
+        - message
+        - timestamp
+      properties:
+        error_id:
+          type: string
+          description: 错误ID
+        message:
+          type: string
+          description: 错误消息
+        stack_trace:
+          type: string
+          description: 堆栈跟踪
+        timestamp:
+          type: string
+          format: date-time
+          description: 发生时间
+
+    BusinessMetrics:
+      type: object
+      required:
+        - active_users
+        - request_count
+        - conversion_metrics
+        - user_satisfaction
+      properties:
+        active_users:
+          $ref: '#/components/schemas/ActiveUsersMetrics'
+        request_count:
+          $ref: '#/components/schemas/RequestCountMetrics'
+        conversion_metrics:
+          $ref: '#/components/schemas/ConversionMetrics'
+        user_satisfaction:
+          $ref: '#/components/schemas/UserSatisfactionMetrics'
+
+    ActiveUsersMetrics:
+      type: object
+      required:
+        - current
+        - peak_24h
+        - peak_7d
+      properties:
+        current:
+          type: integer
+          minimum: 0
+          description: 当前活跃用户数
+        peak_24h:
+          type: integer
+          minimum: 0
+          description: 过去24小时峰值
+        peak_7d:
+          type: integer
+          minimum: 0
+          description: 过去7天峰值
+
+    RequestCountMetrics:
+      type: object
+      required:
+        - total
+        - success
+        - error
+        - rate_per_second
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          description: 总请求数
+        success:
+          type: integer
+          minimum: 0
+          description: 成功请求数
+        error:
+          type: integer
+          minimum: 0
+          description: 错误请求数
+        rate_per_second:
+          type: number
+          minimum: 0
+          description: 每秒请求数
+
+    ConversionMetrics:
+      type: object
+      required:
+        - registration_rate
+        - file_success_rate
+      properties:
+        registration_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 注册转化率（百分比）
+        file_success_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 文件成功率（百分比）
+
+    UserSatisfactionMetrics:
+      type: object
+      required:
+        - score
+        - feedback_count
+      properties:
+        score:
+          type: number
+          minimum: 1
+          maximum: 5
+          description: 用户满意度评分（1-5）
+        feedback_count:
+          type: integer
+          minimum: 0
+          description: 反馈数量
+
+    MonitoringConfig:
+      type: object
+      required:
+        - collection_interval
+        - retention_period
+        - alert_thresholds
+      properties:
+        collection_interval:
+          type: integer
+          minimum: 1
+          description: 数据采集间隔（秒）
+        retention_period:
+          type: integer
+          minimum: 1
+          description: 数据保留期限（天）
+        alert_thresholds:
+          $ref: '#/components/schemas/AlertThresholds'
+
+    AlertThresholds:
+      type: object
+      required:
+        - cpu_usage
+        - memory_usage
+        - disk_usage
+        - response_time
+        - error_rate
+      properties:
+        cpu_usage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: CPU使用率告警阈值
+        memory_usage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 内存使用率告警阈值
+        disk_usage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 磁盘使用率告警阈值
+        response_time:
+          type: number
+          minimum: 0
+          description: 响应时间告警阈值
+        error_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 错误率告警阈值
+
+    StatusReportResponse:
+      type: object
+      required:
+        - response
+        - data
+        - metadata
+      properties:
+        response:
+          $ref: '#/components/schemas/ApiResponse'
+        data:
+          $ref: '#/components/schemas/StatusData'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    StatusData:
+      type: object
+      required:
+        - system_status
+        - services
+        - database
+        - cache
+        - metrics
+        - errors
+        - business_metrics
+        - monitoring_config
+      properties:
+        system_status:
+          $ref: '#/components/schemas/SystemStatus'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceStatus'
+        database:
+          $ref: '#/components/schemas/DatabaseStatus'
+        cache:
+          $ref: '#/components/schemas/CacheStatus'
+        metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorInfo'
+        business_metrics:
+          $ref: '#/components/schemas/BusinessMetrics'
+        monitoring_config:
+          $ref: '#/components/schemas/MonitoringConfig'
+
+    ApiResponse:
+      type: object
+      required:
+        - status
+        - message
+        - timestamp
+        - request_id
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          description: API响应状态
+        message:
+          type: string
+          description: 响应消息
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+        request_id:
+          type: string
+          description: 请求ID（用于追踪）
+
+    ResponseMetadata:
+      type: object
+      required:
+        - version
+        - timestamp
+        - processing_time
+        - data_source
+        - next_collection
+      properties:
+        version:
+          type: string
+          description: API版本
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+        processing_time:
+          type: number
+          minimum: 0
+          description: 处理时间（毫秒）
+        data_source:
+          type: string
+          description: 数据来源
+        next_collection:
+          type: string
+          format: date-time
+          description: 下次采集时间
+
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+        - uptime
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, warning, error, maintenance]
+          description: 系统整体状态
+        timestamp:
+          type: string
+          format: date-time
+          description: 检查时间戳
+        services:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [healthy, warning, error, maintenance]
+          description: 各服务状态
+        uptime:
+          type: integer
+          minimum: 0
+          description: 系统运行时间（秒）
+        version:
+          type: string
+          description: 系统版本号
+
+    ErrorResponse:
+      type: object
+      required:
+        - response
+        - data
+        - metadata
+      properties:
+        response:
+          $ref: '#/components/schemas/ApiResponse'
+        data:
+          type: object
+          required:
+            - error
+          properties:
+            error:
+              $ref: '#/components/schemas/ErrorDetail'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            response:
+              status: "error"
+              message: "Bad Request"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              request_id: "req_400_error"
+            data:
+              error:
+                error_id: "ERR_3001"
+                message: "Invalid parameter"
+                timestamp: "2025-10-24T12:58:30.000Z"
+            metadata:
+              version: "v1.0"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              processing_time: 5
+              data_source: "system_monitor"
+              next_collection: "2025-10-24T12:58:35.000Z"
+
+    Unauthorized:
+      description: 认证失败
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            response:
+              status: "error"
+              message: "Authentication failed"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              request_id: "req_401_error"
+            data:
+              error:
+                error_id: "ERR_1001"
+                message: "Authentication failed"
+                timestamp: "2025-10-24T12:58:30.000Z"
+            metadata:
+              version: "v1.0"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              processing_time: 5
+              data_source: "system_monitor"
+              next_collection: "2025-10-24T12:58:35.000Z"
+
+    InternalError:
+      description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            response:
+              status: "error"
+              message: "Internal Server Error"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              request_id: "req_500_error"
+            data:
+              error:
+                error_id: "ERR_5001"
+                message: "Internal system error"
+                timestamp: "2025-10-24T12:58:30.000Z"
+            metadata:
+              version: "v1.0"
+              timestamp: "2025-10-24T12:58:30.000Z"
+              processing_time: 10
+              data_source: "system_monitor"
+              next_collection: "2025-10-24T12:58:40.000Z"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT令牌认证
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: 运营状态
+    description: 系统运营状态监控相关接口

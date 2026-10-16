@@ -1,0 +1,907 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Files API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: |
+    文件与附件服务接口定义。
+
+    - 对应设计目标：3.b 工作流文件上传、4.a 会话附件管理
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §2
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「File Management」
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+tags:
+  - name: Files
+    description: 文件上传、下载、管理接口
+  - name: File Metadata
+    description: 文件元数据与权限管理
+paths:
+  /api/files:
+    get:
+      operationId: listFiles
+      x-contract-scope: current
+      summary: 获取文件列表
+      description: 分页查询用户文件，支持类型过滤和时间范围筛选。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: 文件类型过滤
+          schema:
+            type: string
+            enum: [image, document, video, audio, archive, other]
+        - name: projectId
+          in: query
+          description: 关联项目ID过滤
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: 创建时间起始（ISO8601）
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: 创建时间结束（ISO8601）
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/FileSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: uploadFile
+      x-contract-scope: current
+      summary: 上传文件
+      description: 支持单文件上传，包含病毒扫描和类型校验。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      x-performance:
+        maxFileSize: 10MB
+        timeoutMs: 30000
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 文件内容
+                filename:
+                  type: string
+                  description: 自定义文件名（可选）
+                projectId:
+                  type: string
+                  description: 关联项目ID
+                description:
+                  type: string
+                  description: 文件描述
+                isPublic:
+                  type: boolean
+                  default: false
+                  description: 是否公开访问
+            encoding:
+              file:
+                contentType: application/octet-stream
+              filename:
+                contentType: application/json
+              projectId:
+                contentType: application/json
+              description:
+                contentType: application/json
+              isPublic:
+                contentType: application/json
+      responses:
+        '201':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/FileUploadResponse'
+              example:
+                success: true
+                data:
+                  fileId: "file-123"
+                  filename: "document.pdf"
+                  size: 2048576
+                  mimeType: "application/pdf"
+                  url: "https://cdn.demo-platform.cn/files/file-123"
+                  thumbnailUrl: "https://cdn.demo-platform.cn/thumbnails/file-123.jpg"
+                  status: "completed"
+                  originalFilename: "original.pdf"
+                  virusScanResult: "clean"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: 文件过大
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: 文件类型不支持或包含恶意内容
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/files/batch:
+    post:
+      operationId: uploadFilesBatch
+      x-contract-scope: current
+      summary: 批量上传文件
+      description: 支持多文件同时上传，返回每个文件的上传结果。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      x-performance:
+        maxTotalSize: 500MB
+        maxFileCount: 20
+        timeoutMs: 60000
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: 文件内容数组
+                projectId:
+                  type: string
+                  description: 关联项目ID
+                description:
+                  type: string
+                  description: 批量描述
+            encoding:
+              files:
+                contentType: application/octet-stream
+              projectId:
+                contentType: application/json
+              description:
+                contentType: application/json
+      responses:
+        '207':
+          description: 多状态返回
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          results:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/BatchUploadResult'
+                          summary:
+                            $ref: '#/components/schemas/BatchUploadSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/files/{fileId}:
+    get:
+      operationId: getFile
+      x-contract-scope: current
+      summary: 下载文件
+      description: 根据文件ID下载文件内容，支持断点续传。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+        - name: range
+          in: header
+          description: HTTP Range头，支持断点续传
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 文件内容
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Length:
+              description: 文件大小
+              schema:
+                type: integer
+            Content-Type:
+              description: 文件MIME类型
+              schema:
+                type: string
+            Content-Disposition:
+              description: 文件下载标识
+              schema:
+                type: string
+            Accept-Ranges:
+              description: 支持范围请求
+              schema:
+                type: string
+                enum: [bytes]
+        '206':
+          description: 部分内容（断点续传）
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteFile
+      x-contract-scope: deferred
+      x-deferred-reason: permanent-delete-requires-business-review
+      summary: 删除文件
+      description: 永久删除文件及其关联数据。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+      responses:
+        '204':
+          description: 删除成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: 无权限删除
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/files/{fileId}/metadata:
+    get:
+      operationId: getFileMetadata
+      x-contract-scope: current
+      summary: 获取文件元数据
+      description: 返回文件的详细元数据信息。
+      tags:
+        - File Metadata
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/FileMetadata'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateFileMetadata
+      x-contract-scope: current
+      summary: 更新文件元数据
+      description: 更新文件描述、权限等元数据。
+      tags:
+        - File Metadata
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFileMetadataRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/FileMetadata'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/files/{fileId}/preview:
+    get:
+      operationId: getFilePreview
+      x-contract-scope: current
+      summary: 获取文件预览
+      description: 返回文件缩略图或预览内容。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+        - name: size
+          in: query
+          description: 预览尺寸
+          schema:
+            type: string
+            enum: [small, medium, large]
+            default: medium
+        - name: format
+          in: query
+          description: 预览格式
+          schema:
+            type: string
+            enum: [jpg, png, webp]
+            default: jpg
+      responses:
+        '200':
+          description: 预览内容
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: 文件类型不支持预览
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/files/{fileId}/share:
+    post:
+      operationId: createShareLink
+      x-contract-scope: current
+      summary: 创建分享链接
+      description: 生成文件的临时分享链接。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShareLinkRequest'
+      responses:
+        '201':
+          description: 分享链接创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShareLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    get:
+      operationId: listShareLinks
+      x-contract-scope: current
+      summary: 获取分享链接列表
+      description: 返回文件的所有有效分享链接。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ShareLink'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/files/{fileId}/share/{shareId}:
+    delete:
+      operationId: revokeShareLink
+      x-contract-scope: current
+      summary: 撤销分享链接
+      description: 删除指定的分享链接。
+      tags:
+        - Files
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 文件ID
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 分享链接ID
+      responses:
+        '204':
+          description: 撤销成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      description: 文件接口统一错误响应。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误描述。
+        details:
+          type: string
+          nullable: true
+          description: 附加调试信息。
+    ApiResponse:
+      type: object
+      required: [success]
+      description: 通用响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    Pagination:
+      type: object
+      description: 通用分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页。
+    FileSummary:
+      type: object
+      required: [id, filename, size, mimeType, createdAt]
+      description: 文件概要信息。
+      properties:
+        id:
+          type: string
+          description: 文件ID。
+        filename:
+          type: string
+          description: 文件名。
+        size:
+          type: integer
+          description: 文件大小（字节）。
+        mimeType:
+          type: string
+          description: MIME类型。
+        type:
+          type: string
+          enum: [image, document, video, audio, archive, other]
+          description: 文件类型分类。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新时间。
+        projectId:
+          type: string
+          description: 关联项目ID。
+        isPublic:
+          type: boolean
+          description: 是否公开。
+        thumbnailUrl:
+          type: string
+          description: 缩略图URL。
+        downloadCount:
+          type: integer
+          description: 下载次数。
+    FileUploadResponse:
+      type: object
+      required: [fileId, filename, size, mimeType, url, status]
+      description: 文件上传响应。
+      properties:
+        fileId:
+          type: string
+          description: 文件ID。
+        filename:
+          type: string
+          description: 存储的文件名。
+        originalFilename:
+          type: string
+          description: 原始文件名。
+        size:
+          type: integer
+          description: 文件大小（字节）。
+        mimeType:
+          type: string
+          description: MIME类型。
+        url:
+          type: string
+          description: 下载URL。
+        thumbnailUrl:
+          type: string
+          description: 缩略图URL。
+        status:
+          type: string
+          enum: [processing, completed, failed]
+          description: 处理状态。
+        virusScanResult:
+          type: string
+          enum: [clean, infected, suspicious]
+          description: 病毒扫描结果。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展元数据。
+    FileMetadata:
+      allOf:
+        - $ref: '#/components/schemas/FileSummary'
+        - type: object
+          properties:
+            description:
+              type: string
+              description: 文件描述。
+            tags:
+              type: array
+              items:
+                type: string
+              description: 文件标签。
+            checksum:
+              type: string
+              description: 文件校验和。
+            storageBackend:
+              type: string
+              description: 存储后端。
+            storagePath:
+              type: string
+              description: 存储路径。
+            uploadedBy:
+              type: string
+              description: 上传者。
+            permissions:
+              type: object
+              properties:
+                canRead:
+                  type: array
+                  items:
+                    type: string
+                  description: 可读用户/角色。
+                canWrite:
+                  type: array
+                  items:
+                    type: string
+                  description: 可写用户/角色。
+                isPublic:
+                  type: boolean
+                  description: 是否公开。
+            shareLinks:
+              type: array
+              items:
+                $ref: '#/components/schemas/ShareLink'
+              description: 分享链接列表。
+            analytics:
+              type: object
+              properties:
+                downloadCount:
+                  type: integer
+                  description: 下载次数。
+                viewCount:
+                  type: integer
+                  description: 查看次数。
+                lastAccessedAt:
+                  type: string
+                  format: date-time
+                  description: 最后访问时间。
+    UpdateFileMetadataRequest:
+      type: object
+      description: 更新文件元数据请求。
+      properties:
+        description:
+          type: string
+          description: 新的文件描述。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 文件标签。
+        permissions:
+          type: object
+          properties:
+            canRead:
+              type: array
+              items:
+                type: string
+              description: 可读用户/角色。
+            canWrite:
+              type: array
+              items:
+                type: string
+              description: 可写用户/角色。
+            isPublic:
+              type: boolean
+              description: 是否公开。
+    BatchUploadResult:
+      type: object
+      description: 批量上传单个文件结果。
+      properties:
+        index:
+          type: integer
+          description: 文件在批次中的索引。
+        filename:
+          type: string
+          description: 文件名。
+        success:
+          type: boolean
+          description: 是否成功。
+        fileId:
+          type: string
+          description: 成功时的文件ID。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败时的错误信息。
+    BatchUploadSummary:
+      type: object
+      required: [total, successful, failed]
+      description: 批量上传汇总。
+      properties:
+        total:
+          type: integer
+          description: 总文件数。
+        successful:
+          type: integer
+          description: 成功数。
+        failed:
+          type: integer
+          description: 失败数。
+        totalSize:
+          type: integer
+          description: 总大小（字节）。
+        uploadedSize:
+          type: integer
+          description: 已上传大小（字节）。
+    CreateShareLinkRequest:
+      type: object
+      required: [expiresIn]
+      description: 创建分享链接请求。
+      properties:
+        expiresIn:
+          type: integer
+          minimum: 300
+          maximum: 7776000
+          description: 过期时间（秒），最小5分钟，最大90天。
+        password:
+          type: string
+          description: 访问密码（可选）。
+        downloadLimit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          description: 下载次数限制。
+        allowPreview:
+          type: boolean
+          default: true
+          description: 是否允许预览。
+    ShareLink:
+      type: object
+      required: [id, url, expiresAt, createdAt]
+      description: 文件分享链接。
+      properties:
+        id:
+          type: string
+          description: 分享链接ID。
+        url:
+          type: string
+          description: 分享链接URL。
+        shortUrl:
+          type: string
+          description: 短链接URL。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 过期时间。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        hasPassword:
+          type: boolean
+          description: 是否有访问密码。
+        downloadLimit:
+          type: integer
+          description: 下载次数限制。
+        downloadCount:
+          type: integer
+          description: 当前下载次数。
+        allowPreview:
+          type: boolean
+          description: 是否允许预览。
+        createdBy:
+          type: string
+          description: 创建者。
+security:
+  - BearerAuth: []

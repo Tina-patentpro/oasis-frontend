@@ -1,0 +1,60 @@
+.marketing-theme {
+  /* Core palette (light) */
+  --marketing-body: #f4f6fc;
+  --marketing-surface: #ffffff;
+  --marketing-surface-strong: #f8faff;
+  --marketing-surface-muted: rgba(226, 232, 240, 0.45);
+  --marketing-surface-alt: rgba(59, 130, 246, 0.12);
+
+  --marketing-border: rgba(203, 213, 225, 0.8);
+  --marketing-border-strong: rgba(148, 163, 184, 1);
+
+  --marketing-primary: #2563eb;
+  --marketing-primary-strong: #1d4ed8;
+  --marketing-primary-soft: rgba(37, 99, 235, 0.18);
+  --marketing-accent: #2563eb;
+  --marketing-accent-soft: rgba(37, 99, 235, 0.12);
+
+  --marketing-text: #475569;
+  --marketing-text-strong: #0f172a;
+  --marketing-text-muted: #64748b;
+  --marketing-text-inverted: #ffffff;
+
+  --marketing-success: #16a34a;
+  --marketing-warning: #f59e0b;
+  --marketing-danger: #dc2626;
+
+  --marketing-glow-blue: rgba(37, 99, 235, 0.18);
+  --marketing-glow-emerald: rgba(16, 185, 129, 0.18);
+  --marketing-glow-purple: rgba(129, 140, 248, 0.18);
+
+  /* Shadows */
+  --marketing-shadow-sm: 0 10px 22px rgba(15, 23, 42, 0.07);
+  --marketing-shadow-lg: 0 18px 36px rgba(15, 23, 42, 0.12);
+
+  color: var(--marketing-text-strong);
+  background-color: var(--marketing-body);
+}
+
+.marketing-theme a {
+  color: inherit;
+}
+
+.marketing-theme .surface-card {
+  background: var(--marketing-surface);
+  border: 1px solid var(--marketing-border);
+  box-shadow: var(--marketing-shadow-sm);
+}
+
+.marketing-theme .surface-card--strong {
+  background: var(--marketing-surface-strong);
+  border-color: var(--marketing-border-strong);
+}
+
+.marketing-theme .surface-card--muted {
+  background: var(--marketing-surface-muted);
+}
+
+.marketing-theme .glow-ring {
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.12), 0 18px 28px rgba(15, 23, 42, 0.12);
+}

@@ -1,0 +1,417 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy API Categories (AI/CMS/Instruction) API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网 apicategories 接口族 legacy 定义，覆盖 AI 工作流、CMS 配置、指令库三类业务。
+
+    - 后端路径：`/apicategories/*`
+    - 代理后路径：`/api/apicategories/*`
+    - 对应接口文档：`API接口文档-用户端.md`
+
+    说明：
+    - 该接口族被 ai.service / cms.service / instruction.service 共用。
+    - queryprocess 用于异步任务轮询，前端 BackgroundTaskPoller 也会调用。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy AI
+    description: 兼容现网 AI 工作流接口
+  - name: Legacy CMS
+    description: 兼容现网内容配置接口
+  - name: Legacy Instruction
+    description: 兼容现网指令库接口
+paths:
+  /api/apicategories/create:
+    post:
+      operationId: legacyCreateWorkflow
+      summary: 创建并执行同步工作流
+      description: |
+        提交工作流输入，同步执行并返回执行 ID（前端随后用 queryprocess 轮询结果）。
+        同步工作流执行时间较长，前端设置了较大超时与重试。
+      tags:
+        - Legacy AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 工作流创建请求体（字段由 CreateWithApiOptions 约定）。
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/apicategories/charteflowcreate:
+    post:
+      operationId: legacyCreateChatflow
+      summary: 创建并执行 Chatflow 对话
+      description: 提交对话请求，返回 conversation_id 与回答内容。
+      tags:
+        - Legacy AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyChatflowRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyChatflowResponse'
+  /api/apicategories/chatflowprompt:
+    get:
+      operationId: legacyGetChatflowPrompts
+      summary: 获取 Chatflow 提示词配置
+      description: 返回对话场景下可用的系统提示词列表。
+      tags:
+        - Legacy AI
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyChatflowPromptsResponse'
+  /api/apicategories/queryprocess/{taskKey}:
+    get:
+      operationId: legacyQueryProcess
+      summary: 查询异步任务执行进度
+      description: |
+        通过 taskKey 查询工作流/任务执行状态与结果。
+        前端 BackgroundTaskPoller 以固定间隔轮询此接口直到完成。
+      tags:
+        - Legacy AI
+      parameters:
+        - name: taskKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 任务标识（执行 ID）。
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyProcessStatusResponse'
+  /api/apicategories/detail:
+    get:
+      operationId: legacyGetCategories
+      summary: 获取模型分类列表（三级结构）
+      description: |
+        返回按分类名分组的 API 分类结构，用于左侧栏分类导航。
+        响应 data 为对象，键为一级分类名（如"技术研发"），值为子分类数组。
+      tags:
+        - Legacy CMS
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyCategoriesResponse'
+  /api/apicategories/configdetail:
+    get:
+      operationId: legacyGetModelConfigDetail
+      summary: 获取模型偏好配置
+      description: 返回当前用户的模型喜好/偏好配置。
+      tags:
+        - Legacy CMS
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyModelConfigResponse'
+  /api/apicategories/userlikecategory:
+    post:
+      operationId: legacyLikeCategory
+      summary: 点赞/收藏分类
+      description: 用户对某个 API 分类点赞或取消。
+      tags:
+        - Legacy CMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: number
+                liked:
+                  type: integer
+                  enum: [0, 1]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/apicategories/apidetail:
+    post:
+      operationId: legacyGetApiDetail
+      summary: 获取 API 分类详情
+      description: 按 name 获取某个 API 分类的详细信息。
+      tags:
+        - Legacy CMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyApiDetailResponse'
+  /api/apicategories/instructionlist:
+    get:
+      operationId: legacyGetInstructionList
+      summary: 获取指令库列表
+      description: 分页获取指令（提示词模板）列表。
+      tags:
+        - Legacy Instruction
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyInstructionListResponse'
+  /api/apicategories/instructioncreate:
+    post:
+      operationId: legacyCreateInstruction
+      summary: 创建指令
+      description: 新建一个指令（提示词模板）。
+      tags:
+        - Legacy Instruction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 指令创建参数（标题、内容等）。
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyCreateInstructionResponse'
+  /api/apicategories/instructiondelete:
+    post:
+      operationId: legacyDeleteInstruction
+      summary: 删除指令
+      description: 按 id 删除一个指令。
+      tags:
+        - Legacy Instruction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: number
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyVoidResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+    LegacyCategoriesResponse:
+      type: object
+      description: |
+        三级分类结构：data 为对象，键为一级分类名，值为子分类数组。
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              description: 子分类项（字段由后端约定，含 id/name 等）。
+    LegacyChatflowRequest:
+      type: object
+      description: Chatflow 对话请求（字段对应 ChatflowRequest 类型）。
+      properties:
+        query:
+          type: string
+        conversation_id:
+          type: string
+          nullable: true
+        type:
+          type: integer
+        folder_id:
+          type: integer
+    LegacyChatflowResponse:
+      type: object
+      description: |
+        Chatflow 响应（字段变体多，前端 normalizer 兼容多种）。
+      properties:
+        conversation_id:
+          type: string
+        answer:
+          type: string
+        answer_text:
+          type: string
+        content:
+          type: string
+        text:
+          type: string
+        output:
+          type: string
+        result:
+          type: string
+        status:
+          type: string
+        error:
+          type: string
+    LegacyChatflowPromptsResponse:
+      type: object
+      description: 提示词配置响应（字段对应 ChatflowPromptsResponse 类型）。
+      properties:
+        prompts:
+          type: array
+          items:
+            type: object
+    LegacyProcessStatusResponse:
+      type: object
+      description: 任务状态响应（字段变体多，前端 normalizer 兼容）。
+      properties:
+        status:
+          type: string
+          description: 执行状态（running/succeeded/failed 等）。
+        outputs:
+          type: string
+        error:
+          type: string
+    LegacyModelConfig:
+      type: object
+      description: 模型偏好配置。
+      properties:
+        model:
+          type: string
+        temperature:
+          type: number
+    LegacyModelConfigResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyModelConfig'
+    LegacyApiDetail:
+      type: object
+      description: API 分类详情。
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+    LegacyApiDetailResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          $ref: '#/components/schemas/LegacyApiDetail'
+    LegacyInstructionItem:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        content:
+          type: string
+    LegacyInstructionListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        total:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegacyInstructionItem'
+    LegacyCreateInstructionResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        data:
+          type: object
+          properties:
+            id:
+              type: number

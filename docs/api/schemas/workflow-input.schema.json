@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/workflow-input.schema.json",
+  "title": "WorkflowInput",
+  "description": "运行工作流时的动态参数示例，实际字段由 /api/workflows/{id} 返回的 schema 定义。",
+  "type": "object",
+  "properties": {
+    "caseTitle": {
+      "type": "string",
+      "title": "案例标题",
+      "maxLength": 200
+    },
+    "problemStatement": {
+      "type": "string",
+      "title": "问题描述",
+      "description": "可包含 Markdown 文本。",
+      "maxLength": 5000
+    },
+    "attachments": {
+      "type": "array",
+      "title": "辅助文件",
+      "items": {
+        "type": "string",
+        "description": "文件上传接口返回的 fileId。"
+      }
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "default": "medium"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "nullable": true
+    }
+  },
+  "required": ["caseTitle", "problemStatement"],
+  "additionalProperties": true
+}

@@ -1,0 +1,119 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+/test-results/
+/playwright-report/
+
+# Production
+/dist
+/build
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Vite
+.vite
+
+# Build outputs and packages
+packages/*.zip
+packages/*.tar.gz
+
+# Backup files
+*.backup
+*.backup-*
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+tmp/
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Log files
+*.log
+logs/
+
+# Environment files
+.env
+.env.development
+.env.production
+.env.*.local
+
+# Lint reports and logs
+lint_report*.json
+lint_report*.txt
+lint-report*.txt
+type_error.txt
+staged_files.txt
+
+# Repo hygiene (audit 3.10)
+backups/
+.worktrees/
+scripts/build/packages/
+console_logs*.txt
+lint_output*.txt
+lint_result*.txt
+lint_results*.txt
+lint_final*.txt
+
+# Runtime/debug scratch directory
+run/
+
+# Playwright CLI debug snapshots
+.playwright-cli/
+.playwright-mcp/
+temp_trace/
+
+# Generated output (screenshots, reports)
+output/
+
+# Browser performance profiles contain cookies, login state and local caches.
+/performance/*/browser-profile/
+
+# Agent session scratch files
+task_plan.md
+findings.md
+progress.md
+nul
+
+# Shell redirection scratch fragments found by round4 frontend audit
+/\!fs.existsSync(require('path').join('dist'
+/([{]text
+/1))
+/1)))
+/1]
+/4
+/document.body.innerText
+/r.text())
+/r.text()))()
+
+# Claude Code local settings
+.claude/settings.local.json
+.gstack/

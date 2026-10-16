@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: TBD
+  version: '0.1.0-draft'
+  description: |
+    # 接口说明
+    - 对应设计目标：请在此列出编号，例如 3.b、4.c
+    - 映射文档章节：FRONTEND-FUNCTIONALITY-MAPPING §1
+    - 校验报告：FRONTEND-DESIGN-VALIDATION-REPORT 表1
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Sample
+    description: 示例分组
+paths:
+  /sample:
+    get:
+      summary: 示例接口
+      description: 请在实际文件中替换为真实描述
+      tags:
+        - Sample
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: 页码
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 20
+          description: 单页数量
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                : '#/components/schemas/PaginatedResponse'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                : '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          nullable: true
+        error:
+          : '#/components/schemas/ErrorInfo'
+    ErrorInfo:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          nullable: true
+    ErrorResponse:
+      allOf:
+        - : '#/components/schemas/ApiResponse'
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+    PaginatedResponse:
+      allOf:
+        - : '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                pagination:
+                  : '#/components/schemas/Pagination'
+security:
+  - BearerAuth: []

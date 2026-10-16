@@ -1,0 +1,981 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Users & Auth API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    账号与认证、通知中心接口定义。
+
+    - 对应设计目标：7.a 注册信息管理、7.f 通知中心、8.i 登录登出
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §5
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Account & Notification」
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Auth
+    description: 登录、刷新、登出与多因素验证
+  - name: Users
+    description: 用户资料、偏好设置管理
+  - name: Notifications
+    description: 通知订阅与读取状态维护
+paths:
+  /api/auth/register:
+    post:
+      operationId: registerUser
+      summary: 用户注册
+      description: 支持邀请码或邮箱验证方式注册新用户，包含防刷和节流机制。
+      tags:
+        - Auth
+      x-rate-limit:
+        requests: 5
+        window: 1h
+        per: IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              email: "user@example.com"
+              password: "SecurePass123!"
+              displayName: "张三"
+              invitationCode: "INV-2024-ABC123"
+              acceptTerms: true
+      responses:
+        '201':
+          description: 注册成功，等待邮箱验证
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RegisterResponse'
+              example:
+                success: true
+                data:
+                  userId: "user-123"
+                  email: "user@example.com"
+                  status: "pending_verification"
+                  verificationExpiresAt: "2025-10-23T22:48:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 邮箱已存在或邀请码无效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: 请求过于频繁
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/register/verify:
+    post:
+      operationId: verifyRegistration
+      x-contract-scope: current
+      summary: 验证注册邮箱
+      description: 通过邮箱验证码完成注册流程。
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRegisterRequest'
+      responses:
+        '200':
+          description: 验证成功，账户激活
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: 验证码无效或已过期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/register/resend:
+    post:
+      operationId: resendVerificationCode
+      x-contract-scope: current
+      summary: 重发验证码
+      description: 重新发送邮箱验证码，包含节流限制。
+      tags:
+        - Auth
+      x-rate-limit:
+        requests: 3
+        window: 1h
+        per: IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 注册邮箱
+      responses:
+        '202':
+          description: 验证码已重新发送
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          description: 请求过于频繁
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/invitations/{code}:
+    get:
+      operationId: validateInvitationCode
+      x-contract-scope: current
+      summary: 验证邀请码
+      description: 检查邀请码的有效性和相关信息。
+      tags:
+        - Auth
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 邀请码
+      responses:
+        '200':
+          description: 邀请码有效
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InvitationInfo'
+        '404':
+          description: 邀请码无效或已过期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/login:
+    post:
+      operationId: loginUser
+      summary: 用户登录
+      description: 支持邮箱+密码或短信验证码方式，返回访问令牌与刷新令牌。
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '423':
+          description: 账号已锁定
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/refresh:
+    post:
+      x-implemented: false
+      operationId: refreshAccessToken
+      x-contract-scope: deferred
+      x-deferred-reason: backend-not-implemented
+      summary: 刷新令牌
+      description: |
+        使用刷新令牌获取新的访问与刷新凭据。
+
+        ⚠️ 目标态设计：现网后端暂未实现 refresh token 能力，令牌过期需重新登录。
+        现网实际认证接口见 `auth-legacy.yaml`。
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthSuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/auth/logout:
+    post:
+      operationId: logoutUser
+      summary: 登出
+      description: 使当前访问令牌失效并清除刷新令牌。
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: 已登出
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/auth/2fa/challenge:
+    post:
+      x-implemented: false
+      operationId: issueTwoFactorChallenge
+      x-contract-scope: deferred
+      x-deferred-reason: backend-not-implemented
+      summary: 下发二次验证挑战
+      description: |
+        为指定用户触发二次验证挑战并发送验证码。
+
+        ⚠️ 目标态设计：现网后端暂未实现 2FA。
+        现网实际认证接口见 `auth-legacy.yaml`。
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, channel]
+              properties:
+                userId:
+                  type: string
+                channel:
+                  type: string
+                  enum: [sms, email, authenticator]
+      responses:
+        '202':
+          description: 挑战已发送
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/auth/2fa/verify:
+    post:
+      x-implemented: false
+      operationId: verifyTwoFactorCode
+      x-contract-scope: deferred
+      x-deferred-reason: backend-not-implemented
+      summary: 验证二次验证码
+      description: |
+        校验用户提交的二次验证验证码并完成登录流程。
+
+        ⚠️ 目标态设计：现网后端暂未实现 2FA。
+        现网实际认证接口见 `auth-legacy.yaml`。
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, code]
+              properties:
+                userId:
+                  type: string
+                code:
+                  type: string
+      responses:
+        '200':
+          description: 验证成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/users/me:
+    get:
+      operationId: getCurrentUser
+      x-contract-scope: current
+      summary: 获取当前用户信息
+      description: 返回当前登录用户的基础资料与权限概览。
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      operationId: updateCurrentUser
+      x-contract-scope: current
+      summary: 更新当前用户资料
+      description: 更新用户的显示名称、头像、联系信息等。
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserProfileRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/users/me/preferences:
+    get:
+      operationId: getUserPreferences
+      x-contract-scope: current
+      summary: 获取偏好设置
+      description: 读取用户个性化偏好配置。
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: updateUserPreferences
+      x-contract-scope: current
+      summary: 更新偏好设置
+      description: 保存更新后的偏好设置以同步到各端。
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: 更新成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/notifications:
+    get:
+      x-implemented: false
+      operationId: listNotifications
+      x-contract-scope: deferred
+      x-deferred-reason: user-deferred-notifications
+      summary: 获取通知列表
+      description: |
+        支持分页、类型过滤，默认按时间倒序返回。
+
+        ⚠️ 目标态设计：现网后端使用 legacy 接口 `/user/usermessagelist`。
+        现网实际通知接口见 `notification-legacy.yaml`。
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Notification'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/notifications/{notificationId}/read:
+    post:
+      x-implemented: false
+      operationId: markNotificationRead
+      x-contract-scope: deferred
+      x-deferred-reason: user-deferred-notifications
+      summary: 标记通知为已读
+      description: |
+        将指定通知标记为已读并更新未读计数。
+
+        ⚠️ 目标态设计：现网后端使用 legacy 接口 `/user/userhasread/{id}`（GET）。
+        现网实际通知接口见 `notification-legacy.yaml`。
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 已更新
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/notifications/read-batch:
+    post:
+      x-implemented: false
+      operationId: markNotificationsReadBatch
+      x-contract-scope: deferred
+      x-deferred-reason: user-deferred-notifications
+      summary: 批量标记已读
+      description: |
+        批量将多个通知标记为已读状态。
+
+        ⚠️ 目标态设计：现网后端使用 legacy 接口 `/user/userhasreadall`（GET）。
+        现网实际通知接口见 `notification-legacy.yaml`。
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notificationIds]
+              properties:
+                notificationIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '204':
+          description: 已更新
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/notifications/channel-token:
+    post:
+      x-implemented: false
+      operationId: getNotificationChannelToken
+      x-contract-scope: deferred
+      x-deferred-reason: user-deferred-notifications
+      summary: 获取通知流连接令牌
+      description: |
+        返回 WebSocket/SSE 连接所需的短期签名，用于实时通知。
+
+        ⚠️ 目标态设计：现网后端暂未实现实时通知通道。
+        现网通知采用轮询（见 `notification-legacy.yaml`）。
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  enum: [websocket, sse]
+                  default: websocket
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotificationChannelToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      description: 认证/用户接口的统一错误响应。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误描述。
+        details:
+          type: string
+          nullable: true
+          description: 附加调试信息。
+    AuthSuccessResponse:
+      type: object
+      required: [success, data]
+      description: 登录成功响应。
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          description: 恒为 true。
+        data:
+          type: object
+          required: [accessToken, refreshToken, expiresIn]
+          description: 授权凭证信息。
+          properties:
+            accessToken:
+              type: string
+              description: 访问令牌。
+            refreshToken:
+              type: string
+              description: 刷新令牌。
+            expiresIn:
+              type: integer
+              description: 访问令牌有效期（秒）。
+            tokenType:
+              type: string
+              default: Bearer
+              description: 令牌类型。
+            mfaRequired:
+              type: boolean
+              description: 是否仍需多因素验证。
+    ApiResponse:
+      type: object
+      required: [success]
+      description: 通用响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    Pagination:
+      type: object
+      description: 通用分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页。
+    LoginRequest:
+      type: object
+      description: 登录请求体。
+      properties:
+        email:
+          type: string
+          format: email
+          description: 用户邮箱。
+        password:
+          type: string
+          description: 密码。
+        otp:
+          type: string
+          description: 一次性验证码。
+        channel:
+          type: string
+          enum: [password, sms, email]
+          default: password
+          description: 认证方式。
+      anyOf:
+        - required: [email, password]
+        - required: [email, otp]
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName, acceptTerms]
+      description: 用户注册请求体。
+      properties:
+        email:
+          type: string
+          format: email
+          description: 用户邮箱。
+        password:
+          type: string
+          minLength: 8
+          description: 密码，至少8位。
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          description: 显示名称。
+        invitationCode:
+          type: string
+          description: 可选，邀请码。
+        acceptTerms:
+          type: boolean
+          description: 是否同意服务条款。
+        locale:
+          type: string
+          default: zh-CN
+          description: 语言偏好。
+      x-examples:
+        邀请码注册:
+          email: "user@example.com"
+          password: "SecurePass123!"
+          displayName: "张三"
+          invitationCode: "INV-2024-ABC123"
+          acceptTerms: true
+        邮箱验证注册:
+          email: "user@example.com"
+          password: "SecurePass123!"
+          displayName: "张三"
+          acceptTerms: true
+    RegisterResponse:
+      type: object
+      required: [userId, email, status, verificationExpiresAt]
+      description: 注册成功响应。
+      properties:
+        userId:
+          type: string
+          description: 用户ID。
+        email:
+          type: string
+          description: 注册邮箱。
+        status:
+          type: string
+          enum: [pending_verification, active]
+          description: 账户状态。
+        verificationExpiresAt:
+          type: string
+          format: date-time
+          description: 验证码过期时间。
+        message:
+          type: string
+          description: 提示信息。
+    VerifyRegisterRequest:
+      type: object
+      required: [email, code]
+      description: 邮箱验证请求。
+      properties:
+        email:
+          type: string
+          format: email
+          description: 注册邮箱。
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6位数字验证码。
+    InvitationInfo:
+      type: object
+      required: [code, isValid, organization]
+      description: 邀请码信息。
+      properties:
+        code:
+          type: string
+          description: 邀请码。
+        isValid:
+          type: boolean
+          description: 是否有效。
+        organization:
+          type: string
+          description: 所属组织。
+        role:
+          type: string
+          enum: [member, admin]
+          description: 预设角色。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 过期时间。
+        createdBy:
+          type: string
+          description: 邀请人。
+    UserProfile:
+      type: object
+      required: [id, email, displayName]
+      description: 用户资料信息。
+      properties:
+        id:
+          type: string
+          description: 用户 ID。
+        email:
+          type: string
+          description: 邮箱。
+        displayName:
+          type: string
+          description: 显示名称。
+        avatarUrl:
+          type: string
+          description: 头像地址。
+        locale:
+          type: string
+          description: 偏好语言。
+        roles:
+          type: array
+          items:
+            type: string
+          description: 角色列表。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        lastLoginAt:
+          type: string
+          format: date-time
+          description: 最近登录时间。
+        organization:
+          type: string
+          description: 所属组织。
+        notificationChannels:
+          type: array
+          items:
+            type: string
+          description: 通知渠道配置。
+        status:
+          type: string
+          enum: [pending_verification, active, suspended, deleted]
+          description: 账户状态。
+    UpdateUserProfileRequest:
+      type: object
+      description: 更新用户资料请求体。
+      properties:
+        displayName:
+          type: string
+          description: 新的显示名称。
+        avatarUrl:
+          type: string
+          description: 新头像地址。
+        locale:
+          type: string
+          description: 语言偏好。
+        timezone:
+          type: string
+          description: 时区。
+        phone:
+          type: string
+          description: 联系电话。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 其它扩展字段。
+    UserPreferences:
+      type: object
+      description: 用户偏好设置。
+      properties:
+        theme:
+          type: string
+          enum: [light, dark, system]
+          description: 主题模式。
+        language:
+          type: string
+          description: 默认语言。
+        dateFormat:
+          type: string
+          description: 日期格式。
+        notification:
+          type: object
+          description: 通知渠道偏好。
+          properties:
+            email:
+              type: boolean
+              description: 是否接受邮件通知。
+            sms:
+              type: boolean
+              description: 是否接受短信通知。
+            inApp:
+              type: boolean
+              description: 是否接受站内通知。
+        accessibility:
+          type: object
+          description: 无障碍设置。
+          properties:
+            fontScale:
+              type: number
+              minimum: 0.8
+              maximum: 1.5
+              description: 字体缩放倍数。
+            highContrast:
+              type: boolean
+              description: 是否开启高对比度。
+    Notification:
+      type: object
+      required: [id, type, title, createdAt]
+      description: 通知消息。
+      properties:
+        id:
+          type: string
+          description: 通知 ID。
+        type:
+          type: string
+          description: 通知类型。
+        title:
+          type: string
+          description: 标题。
+        content:
+          type: string
+          description: 内容。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        readAt:
+          type: string
+          format: date-time
+          description: 阅读时间。
+        priority:
+          type: string
+          enum: [low, normal, high]
+          description: 优先级。
+        linkUrl:
+          type: string
+          description: 跳转链接。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展字段。
+    NotificationChannelToken:
+      type: object
+      required: [endpoint, token, expiresAt]
+      description: 通知通道连接令牌。
+      properties:
+        endpoint:
+          type: string
+          description: SSE 或 WebSocket 连接地址。
+        token:
+          type: string
+          description: 授权令牌。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 过期时间。
+        heartbeatInterval:
+          type: integer
+          description: 建议的心跳间隔（秒）。
+security:
+  - BearerAuth: []

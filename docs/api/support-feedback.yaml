@@ -1,0 +1,724 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Support & Feedback API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    客户支持与建议征集接口定义。
+
+    - 对应设计目标：7.d 有奖建议征集、7.e 用户支持
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §8
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Support Center」
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Support
+    description: 工单、客服沟通
+  - name: Feedback
+    description: 建议征集与投票
+paths:
+  /api/support/tickets:
+    get:
+      operationId: listSupportTickets
+      x-contract-scope: current
+      summary: 获取工单列表
+      description: 按过滤条件分页获取客服工单视图。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, pending, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/SupportTicketSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createSupportTicket
+      x-contract-scope: current
+      summary: 创建工单
+      description: 提交新的客服工单并返回详细信息。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SupportTicketDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/support/tickets/{ticketId}:
+    parameters:
+      - name: ticketId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSupportTicket
+      x-contract-scope: current
+      summary: 获取工单详情
+      description: 查看单个工单的完整信息与处理记录。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SupportTicketDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateSupportTicket
+      x-contract-scope: current
+      summary: 更新工单状态
+      description: 更新工单状态、指派人与标签等元数据。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTicketRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SupportTicketDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/support/tickets/{ticketId}/messages:
+    parameters:
+      - $ref: '#/components/parameters/TicketId'
+    get:
+      operationId: listTicketMessages
+      x-contract-scope: current
+      summary: 获取工单会话
+      description: 获取工单下的客服沟通记录列表。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TicketMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: replySupportTicket
+      x-contract-scope: current
+      summary: 追加工单回复
+      description: 提交客服或用户的回复内容。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketMessageRequest'
+      responses:
+        '201':
+          description: 回复成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/support/knowledge-base:
+    get:
+      operationId: listKnowledgeBaseCategories
+      x-contract-scope: current
+      summary: 获取知识库分类
+      description: 列出知识库分类及对应的文档数量。
+      tags:
+        - Support
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/KnowledgeBaseCategory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/feedback/suggestions:
+    get:
+      operationId: listFeedbackSuggestions
+      x-contract-scope: current
+      summary: 获取建议列表
+      description: 列出所有用户提交的建议，支持投票数据。
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [reviewing, planned, shipped, rejected]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/FeedbackSuggestion'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createFeedbackSuggestion
+      x-contract-scope: current
+      summary: 提交建议
+      description: 新增用户建议并同步初始投票信息。
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSuggestionRequest'
+      responses:
+        '201':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/FeedbackSuggestion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/feedback/suggestions/{suggestionId}/vote:
+    post:
+      operationId: voteFeedbackSuggestion
+      x-contract-scope: current
+      summary: 为建议投票
+      description: 为指定建议增加或撤销投票支持。
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: suggestionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 投票成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/feedback/campaigns:
+    get:
+      operationId: listFeedbackCampaigns
+      x-contract-scope: current
+      summary: 获取建议征集活动
+      description: 用于展示当前进行中的有奖征集信息。
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FeedbackCampaign'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  parameters:
+    TicketId:
+      name: ticketId
+      in: path
+      required: true
+      description: 工单唯一标识。
+      schema:
+        type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: 支持与建议接口的标准响应。
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    ErrorResponse:
+      type: object
+      description: 支持接口错误响应。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息详情。
+      required: [success, error]
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误说明。
+        details:
+          nullable: true
+          description: 可选的上下文或调试信息。
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否还有下一页。
+    SupportTicketSummary:
+      type: object
+      description: 工单概要信息。
+      properties:
+        id:
+          type: string
+          description: 工单 ID。
+        subject:
+          type: string
+          description: 工单主题。
+        status:
+          type: string
+          description: 当前状态。
+        priority:
+          type: string
+          description: 优先级。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最近更新时间。
+    SupportTicketDetail:
+      allOf:
+        - $ref: '#/components/schemas/SupportTicketSummary'
+        - type: object
+          description: 工单详情信息。
+          properties:
+            requester:
+              type: string
+              description: 发起人。
+            assignee:
+              type: string
+              description: 处理人。
+            tags:
+              type: array
+              items:
+                type: string
+              description: 工单标签。
+            attachments:
+              type: array
+              items:
+                $ref: '#/components/schemas/TicketAttachment'
+              description: 附件列表。
+            history:
+              type: array
+              items:
+                $ref: '#/components/schemas/TicketHistoryEntry'
+              description: 操作历史。
+    CreateTicketRequest:
+      type: object
+      required: [subject, description]
+      description: 创建工单请求体。
+      properties:
+        subject:
+          type: string
+          description: 工单主题。
+        description:
+          type: string
+          description: 问题描述。
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+          description: 优先级。
+        category:
+          type: string
+          description: 分类或模块。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAttachment'
+          description: 附件列表。
+    UpdateTicketRequest:
+      type: object
+      description: 更新工单请求体。
+      properties:
+        status:
+          type: string
+          description: 新状态。
+        assignee:
+          type: string
+          description: 指定处理人。
+        priority:
+          type: string
+          description: 更新后的优先级。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签集合。
+    TicketAttachment:
+      type: object
+      description: 工单或消息附件。
+      properties:
+        fileId:
+          type: string
+          description: 文件 ID。
+        fileName:
+          type: string
+          description: 文件名。
+        downloadUrl:
+          type: string
+          description: 下载地址。
+    TicketHistoryEntry:
+      type: object
+      description: 工单历史记录。
+      properties:
+        action:
+          type: string
+          description: 操作动作。
+        actor:
+          type: string
+          description: 操作者。
+        createdAt:
+          type: string
+          format: date-time
+          description: 操作时间。
+        notes:
+          type: string
+          description: 备注或说明。
+    TicketMessage:
+      type: object
+      required: [id, author, body, createdAt]
+      description: 工单对话消息。
+      properties:
+        id:
+          type: string
+          description: 消息 ID。
+        author:
+          type: string
+          description: 发送者账号。
+        body:
+          type: string
+          description: 消息内容。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        internal:
+          type: boolean
+          description: 是否为内部留言。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAttachment'
+          description: 附件列表。
+    CreateTicketMessageRequest:
+      type: object
+      required: [body]
+      description: 新增工单消息请求体。
+      properties:
+        body:
+          type: string
+          description: 消息内容。
+        internal:
+          type: boolean
+          default: false
+          description: 是否内部可见。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAttachment'
+          description: 附件列表。
+    KnowledgeBaseCategory:
+      type: object
+      description: 知识库分类信息。
+      properties:
+        id:
+          type: string
+          description: 分类 ID。
+        title:
+          type: string
+          description: 分类名称。
+        articles:
+          type: array
+          description: 分类下的文章列表。
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 文档 ID。
+              title:
+                type: string
+                description: 文档标题。
+              url:
+                type: string
+                description: 访问链接。
+    FeedbackSuggestion:
+      type: object
+      required: [id, title, votes, status]
+      description: 建议条目信息。
+      properties:
+        id:
+          type: string
+          description: 建议 ID。
+        title:
+          type: string
+          description: 标题。
+        description:
+          type: string
+          description: 建议详情。
+        votes:
+          type: integer
+          description: 投票数量。
+        status:
+          type: string
+          description: 当前状态。
+        requester:
+          type: string
+          description: 提交人。
+        createdAt:
+          type: string
+          format: date-time
+          description: 提交时间。
+        rewardEligible:
+          type: boolean
+          description: 是否有奖励资格。
+    CreateSuggestionRequest:
+      type: object
+      required: [title, description]
+      description: 提交建议请求体。
+      properties:
+        title:
+          type: string
+          description: 建议标题。
+        description:
+          type: string
+          description: 建议内容。
+        category:
+          type: string
+          description: 分类。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAttachment'
+          description: 相关附件。
+    FeedbackCampaign:
+      type: object
+      description: 建议征集活动信息。
+      properties:
+        id:
+          type: string
+          description: 活动 ID。
+        name:
+          type: string
+          description: 活动名称。
+        description:
+          type: string
+          description: 活动描述。
+        reward:
+          type: string
+          description: 奖励说明。
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间。
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间。
+        status:
+          type: string
+          description: 活动状态。
+security:
+  - BearerAuth: []

@@ -1,0 +1,413 @@
+openapi: 3.1.0
+x-contract-scope: current
+info:
+  title: Instructions API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: |
+    指令库管理接口定义。
+
+    - 对应设计目标：4.c 指令库管理、4.d 智能指令推荐
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §3
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Instruction Library」
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+tags:
+  - name: Instructions
+    description: 指令CRUD管理接口
+  - name: Instruction Versions
+    description: 指令版本控制接口
+  - name: Instruction Sharing
+    description: 指令分享和协作接口
+  - name: Instruction Templates
+    description: 指令模板管理接口
+paths:
+  /api/instructions:
+    get:
+      operationId: listInstructions
+      summary: 获取指令列表
+      description: 分页查询用户可见的指令列表，支持按标签、分类、语言等条件过滤。
+      tags:
+        - Instructions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: visibility
+          in: query
+          description: 可见性过滤
+          schema:
+            type: string
+            enum: [personal, team, public]
+        - name: category
+          in: query
+          description: 分类过滤
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/InstructionSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createInstruction
+      summary: 创建指令
+      description: 创建新的指令，支持从模板创建或完全自定义。
+      tags:
+        - Instructions
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstructionRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InstructionDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: 指令名称已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/instructions/{instructionId}:
+    patch:
+      operationId: updateInstruction
+      summary: 更新指令
+      description: 更新指令的基本信息、内容、标签等，支持部分更新。
+      tags:
+        - Instructions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: instructionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 指令ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInstructionRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InstructionDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: 无权限修改
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      required: [success]
+      description: 通用响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误描述。
+        details:
+          type: string
+          nullable: true
+          description: 附加调试信息。
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      description: 指令接口统一错误响应。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误信息。
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页。
+    InstructionSummary:
+      type: object
+      required: [id, name, category, visibility, createdAt]
+      description: 指令概要信息。
+      properties:
+        id:
+          type: string
+          description: 指令ID。
+        name:
+          type: string
+          description: 指令名称。
+        description:
+          type: string
+          description: 指令描述。
+        category:
+          type: string
+          description: 指令分类。
+        language:
+          type: string
+          description: 编程语言。
+        visibility:
+          type: string
+          enum: [personal, team, public]
+          description: 可见性。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签列表。
+        isTemplate:
+          type: boolean
+          description: 是否为模板。
+        usageCount:
+          type: integer
+          description: 使用次数。
+        folder:
+          type: string
+          description: 所属文件夹。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新时间。
+    InstructionDetail:
+      allOf:
+        - $ref: '#/components/schemas/InstructionSummary'
+        - type: object
+          required: [content, owner]
+          properties:
+            content:
+              type: string
+              description: 指令内容。
+            owner:
+              type: object
+              required: [id, name, email]
+              description: 创建者信息。
+              properties:
+                id:
+                  type: string
+                  description: 用户ID。
+                name:
+                  type: string
+                  description: 用户姓名。
+                email:
+                  type: string
+                  format: email
+                  description: 用户邮箱。
+                avatarUrl:
+                  type: string
+                  description: 头像URL。
+            version:
+              type: string
+              description: 当前版本号。
+            isDeleted:
+              type: boolean
+              default: false
+              description: 是否已删除。
+    CreateInstructionRequest:
+      type: object
+      required: [name, content, language, visibility]
+      description: 创建指令请求体。
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: 指令名称。
+        description:
+          type: string
+          maxLength: 500
+          description: 指令描述。
+        content:
+          type: string
+          description: 指令内容。
+        language:
+          type: string
+          description: 编程语言标识。
+        category:
+          type: string
+          description: 指令分类。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签列表。
+        visibility:
+          type: string
+          enum: [personal, team, public]
+          default: personal
+          description: 可见性。
+        folder:
+          type: string
+          description: 所属文件夹。
+        isTemplate:
+          type: boolean
+          default: false
+          description: 是否为模板。
+        templateId:
+          type: string
+          description: 基于的模板ID。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展元数据。
+    UpdateInstructionRequest:
+      type: object
+      description: 更新指令请求体。
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: 新的指令名称。
+        description:
+          type: string
+          maxLength: 500
+          description: 新的指令描述。
+        content:
+          type: string
+          description: 新的指令内容。
+        category:
+          type: string
+          description: 新的指令分类。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 新的标签列表。
+        visibility:
+          type: string
+          enum: [personal, team, public]
+          description: 新的可见性。
+        folder:
+          type: string
+          description: 新的所属文件夹。
+        isTemplate:
+          type: boolean
+          description: 是否设为模板。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 新的扩展元数据。
+security:
+  - BearerAuth: []

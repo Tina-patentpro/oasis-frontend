@@ -1,0 +1,212 @@
+openapi: 3.1.0
+x-contract-scope: legacy
+info:
+  title: Legacy Notification API
+  version: '2026-02-13'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    现网用户消息通知 legacy 接口定义，用于与前端通知中心联调。
+
+    - 后端路径：`/user/usermessagelist`、`/user/userhasread/*`、`/user/userhasdel/*`
+    - 代理后路径：`/api/user/usermessagelist` 等
+    - 对应接口文档：`API接口文档-用户端.md`
+
+    ⚠️ 历史遗留问题（违反 RESTful 规范）：
+    - 标记已读、删除等**写操作均使用 GET 语义**（应使用 POST/DELETE）。
+    - 此为现网后端历史实现，前端为兼容已沿用。
+    - 目标态契约（RESTful 的 `/api/notifications/*`）见 `users-auth.yaml`，
+      已标注 `x-implemented: false`，待后端迁移后切换。
+servers:
+  - url: https://lzhxpy.oasisintwrite.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Legacy Notifications
+    description: 兼容现网用户消息接口
+paths:
+  /api/user/usermessagelist:
+    get:
+      operationId: legacyGetUserMessageList
+      summary: 获取用户消息列表
+      description: |
+        分页获取用户消息。响应体中 `items` 与 `item` 字段均兼容（normalizer 同时识别）。
+      tags:
+        - Legacy Notifications
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: integer
+            enum: [0, 1]
+          description: 'type=0 表示全部，type=1 表示仅未读。'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyMessageListResponse'
+              examples:
+                success:
+                  summary: 成功示例
+                  value:
+                    code: 200
+                    msg: 成功
+                    data:
+                      total: 5
+                      items:
+                        - id: 101
+                          title: 系统通知
+                          content: 欢迎使用绿洲慧写
+                          is_read: 0
+                          created_at: '2026-06-26T10:00:00'
+  /api/user/userhasread/{messageId}:
+    get:
+      operationId: legacyMarkMessageRead
+      summary: 标记单条消息为已读
+      description: |
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 POST/DELETE）。
+      tags:
+        - Legacy Notifications
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 标记成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/userhasreadall:
+    get:
+      operationId: legacyMarkAllRead
+      summary: 标记所有消息为已读
+      description: |
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 POST/DELETE）。
+      tags:
+        - Legacy Notifications
+      responses:
+        '200':
+          description: 标记成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/userhasdel/{messageId}:
+    get:
+      operationId: legacyDeleteMessage
+      summary: 删除单条消息
+      description: |
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 POST/DELETE）。
+      tags:
+        - Legacy Notifications
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+  /api/user/userhasdelall:
+    get:
+      operationId: legacyDeleteAllMessages
+      summary: 清空所有消息
+      description: |
+        ⚠️ 写操作使用 GET 语义（历史遗留，应迁移至 POST/DELETE）。
+      tags:
+        - Legacy Notifications
+      responses:
+        '200':
+          description: 清空成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyVoidResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LegacyMessageListResponse:
+      type: object
+      required: [code, data]
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          required: [total]
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            items:
+              type: array
+              description: 消息列表；后端可能返回为 `item`，前端 normalizer 兼容两者。
+              items:
+                $ref: '#/components/schemas/LegacyMessageItem'
+    LegacyMessageItem:
+      type: object
+      required: [id, title, content, is_read, created_at]
+      properties:
+        id:
+          type: number
+          description: 消息 ID（后端可能返回字符串或数字，前端 toNumber 兼容）。
+        title:
+          type: string
+          description: 标题（缺失时前端回退为"系统通知"）。
+        content:
+          type: string
+          description: 正文（后端可能返回为 `message` 字段，前端兼容）。
+        is_read:
+          type: integer
+          enum: [0, 1]
+          description: 'is_read=0 表示未读，is_read=1 表示已读。'
+        created_at:
+          type: string
+          description: 创建时间（缺失时前端回退为当前时间）。
+    LegacyVoidResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum: [0, 200]
+        msg:
+          type: string
+        message:
+          type: string
+        data:
+          type: object

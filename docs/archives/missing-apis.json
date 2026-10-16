@@ -1,0 +1,766 @@
+{
+  "total_missing": 126,
+  "by_priority": {
+    "P0": 11,
+    "P1": 19,
+    "P2": 96
+  },
+  "missing_apis": [
+    {
+      "id": "getWorkflows",
+      "name": "获取工作流列表",
+      "priority": "P1",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getWorkflowDetail",
+      "name": "获取工作流详情",
+      "priority": "P1",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "executeWorkflow",
+      "name": "执行工作流",
+      "priority": "P0",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getWorkflowExecutionResult",
+      "name": "获取执行结果",
+      "priority": "P1",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getWorkflowExecutionProgress",
+      "name": "获取执行进度",
+      "priority": "P2",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getWorkflowExecutions",
+      "name": "获取执行历史",
+      "priority": "P2",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getWorkflowPresets",
+      "name": "获取预设模板",
+      "priority": "P2",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "createWorkflowChain",
+      "name": "创建工作流链",
+      "priority": "P2",
+      "source": "workflows.yaml"
+    },
+    {
+      "id": "getConversations",
+      "name": "获取会话列表",
+      "priority": "P1",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "createConversation",
+      "name": "创建新会话",
+      "priority": "P0",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "getConversation",
+      "name": "获取会话详情",
+      "priority": "P1",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "updateConversation",
+      "name": "更新会话",
+      "priority": "P2",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "deleteConversation",
+      "name": "删除会话",
+      "priority": "P2",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "getConversationMessages",
+      "name": "获取会话消息",
+      "priority": "P1",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "sendConversationMessage",
+      "name": "发送消息",
+      "priority": "P0",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "streamConversationMessage",
+      "name": "流式发送消息",
+      "priority": "P0",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "getConversationAttachments",
+      "name": "获取会话附件",
+      "priority": "P2",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "exportConversation",
+      "name": "导出会话",
+      "priority": "P2",
+      "source": "conversations.yaml"
+    },
+    {
+      "id": "getProjects",
+      "name": "获取项目列表",
+      "priority": "P1",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "createProject",
+      "name": "创建项目",
+      "priority": "P0",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "getProjectDetail",
+      "name": "获取项目详情",
+      "priority": "P1",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "updateProject",
+      "name": "更新项目",
+      "priority": "P1",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "deleteProject",
+      "name": "删除项目",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "getProjectSummary",
+      "name": "获取项目摘要",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "listProjectWorkflows",
+      "name": "列出项目工作流",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "listProjectConversations",
+      "name": "列出项目会话",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "listProjectAttachments",
+      "name": "列出项目附件",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "exportProject",
+      "name": "导出项目",
+      "priority": "P2",
+      "source": "projects.yaml"
+    },
+    {
+      "id": "listFiles",
+      "name": "列出文件",
+      "priority": "P1",
+      "source": "files.yaml"
+    },
+    {
+      "id": "uploadFile",
+      "name": "上传文件",
+      "priority": "P0",
+      "source": "files.yaml"
+    },
+    {
+      "id": "uploadFilesBatch",
+      "name": "批量上传",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "getFile",
+      "name": "获取文件",
+      "priority": "P1",
+      "source": "files.yaml"
+    },
+    {
+      "id": "deleteFile",
+      "name": "删除文件",
+      "priority": "P1",
+      "source": "files.yaml"
+    },
+    {
+      "id": "getFileMetadata",
+      "name": "获取文件元数据",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "updateFileMetadata",
+      "name": "更新文件元数据",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "getFilePreview",
+      "name": "获取文件预览",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "createShareLink",
+      "name": "创建分享链接",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "listShareLinks",
+      "name": "列出分享链接",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "revokeShareLink",
+      "name": "撤销分享链接",
+      "priority": "P2",
+      "source": "files.yaml"
+    },
+    {
+      "id": "registerUser",
+      "name": "用户注册",
+      "priority": "P0",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "verifyRegistration",
+      "name": "验证注册",
+      "priority": "P0",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "resendVerificationCode",
+      "name": "重发验证码",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "validateInvitationCode",
+      "name": "验证邀请码",
+      "priority": "P2",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "loginUser",
+      "name": "用户登录",
+      "priority": "P0",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "refreshAccessToken",
+      "name": "刷新令牌",
+      "priority": "P0",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "logoutUser",
+      "name": "用户登出",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "issueTwoFactorChallenge",
+      "name": "发起2FA挑战",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "verifyTwoFactorCode",
+      "name": "验证2FA代码",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "getCurrentUser",
+      "name": "获取当前用户",
+      "priority": "P0",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "updateCurrentUser",
+      "name": "更新当前用户",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "getUserPreferences",
+      "name": "获取用户偏好",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "updateUserPreferences",
+      "name": "更新用户偏好",
+      "priority": "P1",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "listNotifications",
+      "name": "列出通知",
+      "priority": "P2",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "markNotificationRead",
+      "name": "标记通知已读",
+      "priority": "P2",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "markNotificationsReadBatch",
+      "name": "批量标记已读",
+      "priority": "P2",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "getNotificationChannelToken",
+      "name": "获取通知渠道令牌",
+      "priority": "P2",
+      "source": "users-auth.yaml"
+    },
+    {
+      "id": "getBillingSummary",
+      "name": "获取账单摘要",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "listBillingTransactions",
+      "name": "列出账单交易",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "listPricingPlans",
+      "name": "列出定价方案",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "createTopUpOrder",
+      "name": "创建充值订单",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "getTopUpOrder",
+      "name": "获取充值订单",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "createRefundRequest",
+      "name": "创建退款请求",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "getBillingUsage",
+      "name": "获取使用量",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "handleBillingWebhook",
+      "name": "处理账单webhook",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "verifyBillingSignature",
+      "name": "验证账单签名",
+      "priority": "P2",
+      "source": "billing.yaml"
+    },
+    {
+      "id": "listGrants",
+      "name": "列出授权",
+      "priority": "P2",
+      "source": "billing-grants.yaml"
+    },
+    {
+      "id": "createGrant",
+      "name": "创建授权",
+      "priority": "P2",
+      "source": "billing-grants.yaml"
+    },
+    {
+      "id": "listSupportTickets",
+      "name": "列出工单",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "createSupportTicket",
+      "name": "创建工单",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "getSupportTicket",
+      "name": "获取工单详情",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "updateSupportTicket",
+      "name": "更新工单",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "listTicketMessages",
+      "name": "列出工单消息",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "replySupportTicket",
+      "name": "回复工单",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "listKnowledgeBaseCategories",
+      "name": "列出知识库分类",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "listFeedbackSuggestions",
+      "name": "列出反馈建议",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "createFeedbackSuggestion",
+      "name": "创建反馈建议",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "voteFeedbackSuggestion",
+      "name": "投票反馈建议",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "listFeedbackCampaigns",
+      "name": "列出反馈活动",
+      "priority": "P2",
+      "source": "support-feedback.yaml"
+    },
+    {
+      "id": "listChatflows",
+      "name": "列出对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "createChatflow",
+      "name": "创建对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "getChatflow",
+      "name": "获取对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "updateChatflow",
+      "name": "更新对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "archiveChatflow",
+      "name": "归档对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "publishChatflow",
+      "name": "发布对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "listChatflowVersions",
+      "name": "列出对话流版本",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "previewChatflow",
+      "name": "预览对话流",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "listChatflowInstructions",
+      "name": "列出对话流指令",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "updateChatflowInstructions",
+      "name": "更新对话流指令",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "getChatflowVariables",
+      "name": "获取对话流变量",
+      "priority": "P2",
+      "source": "chatflows.yaml"
+    },
+    {
+      "id": "listInstructions",
+      "name": "列出指令",
+      "priority": "P2",
+      "source": "instructions.yaml"
+    },
+    {
+      "id": "createInstruction",
+      "name": "创建指令",
+      "priority": "P2",
+      "source": "instructions.yaml"
+    },
+    {
+      "id": "updateInstruction",
+      "name": "更新指令",
+      "priority": "P2",
+      "source": "instructions.yaml"
+    },
+    {
+      "id": "submitPerformanceMetrics",
+      "name": "提交性能指标",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "getPerformanceRecords",
+      "name": "获取性能记录",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "getPerformanceStatistics",
+      "name": "获取性能统计",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "getSlowestPages",
+      "name": "获取最慢页面",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "cleanupExpiredData",
+      "name": "清理过期数据",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "clearAllPerformanceData",
+      "name": "清除所有性能数据",
+      "priority": "P2",
+      "source": "performance.yaml"
+    },
+    {
+      "id": "getUsageSummary",
+      "name": "获取使用摘要",
+      "priority": "P2",
+      "source": "usage-insights.yaml"
+    },
+    {
+      "id": "getUsageBreakdown",
+      "name": "获取使用细分",
+      "priority": "P2",
+      "source": "usage-insights.yaml"
+    },
+    {
+      "id": "getTopUsageUsers",
+      "name": "获取高使用用户",
+      "priority": "P2",
+      "source": "usage-insights.yaml"
+    },
+    {
+      "id": "getUsageAnomalies",
+      "name": "获取使用异常",
+      "priority": "P2",
+      "source": "usage-insights.yaml"
+    },
+    {
+      "id": "exportUsageData",
+      "name": "导出使用数据",
+      "priority": "P2",
+      "source": "usage-insights.yaml"
+    },
+    {
+      "id": "listDeletionRequests",
+      "name": "列出删除请求",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "createDeletionRequest",
+      "name": "创建删除请求",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "getDeletionRequestDetail",
+      "name": "获取删除请求详情",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "approveDeletionRequest",
+      "name": "批准删除请求",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "executeDeletionRequest",
+      "name": "执行删除请求",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "restoreDeletedData",
+      "name": "恢复已删除数据",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "getDeletionProof",
+      "name": "获取删除证明",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "listDeletionPolicies",
+      "name": "列出删除策略",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "getDeletionAuditLogs",
+      "name": "获取删除审计日志",
+      "priority": "P2",
+      "source": "data-deletion.yaml"
+    },
+    {
+      "id": "reportStatus",
+      "name": "上报系统运营状态",
+      "priority": "P2",
+      "source": "ops-status.yaml"
+    },
+    {
+      "id": "getHealthStatus",
+      "name": "获取系统健康状态",
+      "priority": "P2",
+      "source": "ops-status.yaml"
+    },
+    {
+      "id": "clearUserCache",
+      "name": "清理缓存",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "exportUserData",
+      "name": "导出个人数据",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "getDataExportStatus",
+      "name": "查询数据导出任务",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "getReleaseNotes",
+      "name": "获取版本差异信息",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "listHelpArticles",
+      "name": "获取帮助文档列表",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "getLayoutPreference",
+      "name": "获取工作区布局设置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "updateLayoutPreference",
+      "name": "更新工作区布局设置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "getVisibilityPreference",
+      "name": "获取可见性配置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "updateVisibilityPreference",
+      "name": "更新可见性配置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "updateTheme",
+      "name": "切换主题",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "getTooltipSettings",
+      "name": "获取气泡提示配置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    },
+    {
+      "id": "updateTooltipSettings",
+      "name": "更新气泡提示配置",
+      "priority": "P2",
+      "source": "utilities.yaml"
+    }
+  ]
+}

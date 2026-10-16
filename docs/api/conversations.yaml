@@ -1,0 +1,758 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Conversations API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: |
+    对话历史与实时消息接口定义。
+
+    - 对应设计目标：4.b 会话历史、6.a~6.c 项目关联/重命名/导出
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §3
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Conversation Center」
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+tags:
+  - name: Conversations
+    description: 对话会话的创建、查询与管理
+  - name: Conversation Messages
+    description: 对话中的消息发送、流式响应与附件
+paths:
+  /api/conversations:
+    get:
+      operationId: getConversations
+      x-contract-scope: current
+      summary: 获取会话列表
+      description: 按 chatflow、项目与状态过滤会话，按更新时间倒序返回。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chatflowId
+          in: query
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          schema:
+            type: string
+        - name: keyword
+          in: query
+          description: 按标题或最后一条消息模糊匹配。
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, archived]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ConversationSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createConversation
+      x-contract-scope: current
+      summary: 创建新会话
+      description: 基于指定 chatflow 启动新的对话，可立即发送第一条消息。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConversationDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/conversations/{conversationId}:
+    parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getConversation
+      x-contract-scope: current
+      summary: 获取会话详情
+      description: 返回基础信息、关联项目、标签及最近消息。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConversationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateConversation
+      x-contract-scope: current
+      summary: 更新会话信息
+      description: 支持重命名、调整所属项目或归档状态。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConversationRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConversationDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteConversation
+      x-contract-scope: current
+      summary: 删除会话
+      description: 软删除当前会话并隐藏所有消息。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: 已删除
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/conversations/{conversationId}/messages:
+    parameters:
+      - $ref: '#/components/parameters/ConversationId'
+    get:
+      operationId: getConversationMessages
+      x-contract-scope: current
+      summary: 获取会话消息列表
+      description: 按时间倒序分页返回指定会话的历史消息。
+      tags:
+        - Conversation Messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: after
+          in: query
+          description: 从指定消息 ID 后开始返回。
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ConversationMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: sendConversationMessage
+      x-contract-scope: current
+      summary: 发送消息并触发模型响应
+      description: 发送新的用户消息并启动模型生成回复流程。
+      tags:
+        - Conversation Messages
+      security:
+        - BearerAuth: []
+      x-performance:
+        targetTTFTMs: 1200
+        p95LatencyMs: 1800
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '202':
+          description: 已接受，返回消息 ID 与流式响应通道
+          headers:
+            Location:
+              description: SSE 流式地址
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          messageId:
+                            type: string
+                          streamUrl:
+                            type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/conversations/{conversationId}/messages/stream:
+    get:
+      operationId: streamConversationMessage
+      x-contract-scope: current
+      summary: 订阅消息生成流（SSE）
+      description: 以 Server-Sent Events 推送模型生成的分片结果，支持 `Last-Event-ID` 续传及轮询降级。
+      tags:
+        - Conversation Messages
+      security:
+        - BearerAuth: []
+      x-performance:
+        maxConnectionDurationSeconds: 300
+        heartbeatIntervalSeconds: 15
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: transport
+          in: query
+          description: 降级策略，`polling` 时返回完整消息。
+          schema:
+            type: string
+            enum: [sse, polling]
+            default: sse
+      responses:
+        '200':
+          description: 成功（SSE 流）
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/MessageStreamEvent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/conversations/{conversationId}/attachments:
+    get:
+      operationId: getConversationAttachments
+      x-contract-scope: current
+      summary: 获取会话附件列表
+      description: 列出消息引用的文件与外部资源信息。
+      tags:
+        - Conversation Messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ConversationAttachment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/conversations/{conversationId}/export:
+    parameters:
+      - $ref: '#/components/parameters/ConversationId'
+    post:
+      operationId: exportConversation
+      x-contract-scope: current
+      summary: 导出会话
+      description: 生成可下载文件（PDF/JSON），并返回下载地址 token。
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format:
+                  type: string
+                  enum: [pdf, json, markdown]
+                includeAttachments:
+                  type: boolean
+                  default: false
+      responses:
+        '202':
+          description: 导出任务已创建
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConversationExportTicket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  parameters:
+    ConversationId:
+      name: conversationId
+      in: path
+      required: true
+      description: 会话唯一标识。
+      schema:
+        type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: 会话服务标准响应。
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误说明。
+        details:
+          nullable: true
+          description: 附加调试信息。
+    ErrorResponse:
+      allOf:
+        - type: object
+          required: [success, error]
+          properties:
+            success:
+              type: boolean
+              enum: [false]
+              description: 恒为 false。
+            error:
+              $ref: '#/components/schemas/ErrorInfo'
+              description: 错误详情。
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页记录数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否存在下一页。
+    ConversationSummary:
+      type: object
+      required: [id, title, chatflowId, updatedAt]
+      description: 会话列表展示用信息。
+      properties:
+        id:
+          type: string
+          description: 会话 ID。
+        title:
+          type: string
+          description: 会话标题。
+        chatflowId:
+          type: string
+          description: 来源的对话流 ID。
+        projectId:
+          type: string
+          nullable: true
+          description: 关联项目 ID。
+        status:
+          type: string
+          enum: [active, archived]
+          description: 会话状态。
+        lastMessagePreview:
+          type: string
+          description: 最近消息内容摘要。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最近更新时间。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        pinned:
+          type: boolean
+          default: false
+          description: 是否置顶。
+        workspaceContext:
+          $ref: '#/components/schemas/WorkspaceSessionContext'
+    ConversationDetail:
+      allOf:
+        - $ref: '#/components/schemas/ConversationSummary'
+        - type: object
+          description: 会话详情。
+          properties:
+            participants:
+              type: array
+              items:
+                type: string
+              description: 参与者列表。
+            tags:
+              type: array
+              items:
+                type: string
+              description: 会话标签。
+            metadata:
+              type: object
+              additionalProperties: true
+              description: 扩展信息。
+            unreadCount:
+              type: integer
+              description: 未读消息数量。
+            lastMessageAt:
+              type: string
+              format: date-time
+              description: 最近消息时间。
+            workspaceContext:
+              $ref: '#/components/schemas/WorkspaceSessionContext'
+    ConversationMessage:
+      type: object
+      required: [id, role, createdAt, content]
+      description: 单条会话消息。
+      properties:
+        id:
+          type: string
+          description: 消息 ID。
+        role:
+          type: string
+          enum: [user, assistant, system, tool]
+          description: 消息角色。
+        content:
+          type: string
+          description: 消息正文内容。
+        delta:
+          type: string
+          description: 对于流式响应的增量内容。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationAttachment'
+          description: 消息附件列表。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展字段。
+    WorkspaceSessionContext:
+      type: object
+      description: |
+        工作区会话关联的工作流上下文信息，前端在点选历史记录时，会根据这些字段还原工具、模型版本及输入输出。
+      properties:
+        toolType:
+          type: string
+          description: 工作流工具唯一标识（如 `rd.tech-survey`）。
+        toolName:
+          type: string
+          description: 展示名称，便于直接渲染到工具分组。
+        modelVersion:
+          type: string
+          description: 本次执行时所选模型版本，例如 `1.0 Basic`。
+        tabId:
+          type: string
+          nullable: true
+          description: 所属工具分组/Tab 标识。
+        inputs:
+          type: object
+          additionalProperties: true
+          description: 输入参数快照，包含 `userInstruction` 等字段。
+          example:
+            userInstruction: "请聚焦底盘减振方案，并列出必须规避的竞品专利。"
+            caseTitle: "协作机器人底盘阻尼系统"
+            problemStatement: "输出独立权利要求及关键从属项"
+        latestOutput:
+          type: object
+          additionalProperties: true
+          description: 最近一次生成的输出摘要，可用于预览。
+    ConversationAttachment:
+      type: object
+      required: [fileId, fileName, mimeType]
+      description: 会话消息附件。
+      properties:
+        fileId:
+          type: string
+          description: 文件 ID。
+        fileName:
+          type: string
+          description: 文件名。
+        mimeType:
+          type: string
+          description: 文件类型。
+        size:
+          type: integer
+          description: 文件大小，单位字节。
+        downloadUrl:
+          type: string
+          description: 预签名 URL，2 分钟内有效。
+    MessageStreamEvent:
+      type: object
+      description: SSE 流式消息事件。
+      properties:
+        event:
+          type: string
+          enum: [chunk, completed, error]
+          description: 事件类型。
+        id:
+          type: string
+          description: 事件 ID。
+        data:
+          type: object
+          additionalProperties: true
+          description: 事件携带的数据。
+    CreateConversationRequest:
+      type: object
+      required: [chatflowId]
+      description: 创建会话请求体。
+      properties:
+        chatflowId:
+          type: string
+          description: 对话流 ID。
+        projectId:
+          type: string
+          description: 可选，关联项目。
+        title:
+          type: string
+          description: 会话标题。
+        initialMessage:
+          $ref: '#/components/schemas/SendMessageRequest'
+          description: 可选，立即发送第一条消息。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展字段。
+    UpdateConversationRequest:
+      type: object
+      description: 更新会话请求体。
+      properties:
+        title:
+          type: string
+          description: 新标题。
+        projectId:
+          type: string
+          description: 新关联项目。
+        status:
+          type: string
+          enum: [active, archived]
+          description: 会话状态。
+        pinned:
+          type: boolean
+          description: 是否置顶。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 扩展字段。
+    SendMessageRequest:
+      type: object
+      required: [role, content]
+      description: 发送消息请求。
+      properties:
+        role:
+          type: string
+          enum: [user, system]
+          description: 消息角色。
+        content:
+          type: string
+          description: 消息内容。
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationAttachment'
+          description: 附件列表。
+        options:
+          type: object
+          description: 发送选项。
+          properties:
+            stream:
+              type: boolean
+              default: true
+              description: 是否流式返回。
+            temperature:
+              type: number
+              minimum: 0
+              maximum: 2
+              description: 生成温度。
+            stopSequences:
+              type: array
+              items:
+                type: string
+              description: 停止序列。
+    ConversationExportTicket:
+      type: object
+      required: [exportId, status]
+      description: 会话导出任务票据。
+      properties:
+        exportId:
+          type: string
+          description: 导出任务 ID。
+        status:
+          type: string
+          enum: [queued, processing, ready, failed]
+          description: 任务状态。
+        downloadUrl:
+          type: string
+          description: 生成完成后返回的短期下载地址。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 下载链接过期时间。
+security:
+  - BearerAuth: []

@@ -1,0 +1,770 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Chatflows API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.demo-platform.cn
+    url: https://api.demo-platform.cn/support
+  description: |
+    对话流（Chatflow）接口定义。
+
+    - 对应设计目标：4.a 多对话输入、4.c 指令库管理
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §2
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Chatflow Builder」
+servers:
+  - url: https://api.demo-platform.cn
+    description: 生产环境
+  - url: https://sandbox.demo-platform.cn
+    description: 沙箱环境
+tags:
+  - name: Chatflows
+    description: 对话流模板的创建、查询与发布
+  - name: Chatflow Instructions
+    description: 对话流指令模板的关联与同步
+paths:
+  /api/chatflows:
+    get:
+      operationId: listChatflows
+      x-contract-scope: current
+      summary: 分页检索对话流模板
+      description: 按关键字、可见性与标签分页查询团队可用的对话流模板，支持列表页筛选与搜索建议。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: keyword
+          in: query
+          description: 名称与描述模糊搜索。
+          schema:
+            type: string
+        - name: visibility
+          in: query
+          schema:
+            type: string
+            enum: [private, team, global]
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ChatflowSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createChatflow
+      x-contract-scope: current
+      summary: 新建对话流模板
+      description: 基于空白模板或指定的已有模板，创建一份可继续编辑的对话流草稿，用于知识沉淀或快速复制最佳实践。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatflowRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatflowDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/chatflows/{chatflowId}:
+    parameters:
+      - name: chatflowId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getChatflow
+      x-contract-scope: current
+      summary: 获取对话流详情
+      description: 返回配置详情、输入渠道定义、指令关联与发布状态。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatflowDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateChatflow
+      x-contract-scope: current
+      summary: 更新对话流草稿
+      description: 支持局部更新名称、描述、提示词及输入配置。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChatflowRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatflowDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: archiveChatflow
+      x-contract-scope: current
+      summary: 归档对话流
+      description: 将对话流标记为归档状态，不再对终端用户展示。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: 已归档
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/chatflows/{chatflowId}/publish:
+    parameters:
+      - $ref: '#/components/parameters/ChatflowId'
+    post:
+      operationId: publishChatflow
+      x-contract-scope: current
+      summary: 发布对话流版本
+      description: 将草稿版本发布为可用状态，生成新的版本号。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notes]
+              properties:
+                notes:
+                  type: string
+                  description: 发布备注或变更说明。
+                visibility:
+                  type: string
+                  enum: [private, team, global]
+                  description: 可选，调整发布后的可见范围。
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatflowVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: 存在未保存的草稿变更
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/chatflows/{chatflowId}/versions:
+    parameters:
+      - $ref: '#/components/parameters/ChatflowId'
+    get:
+      operationId: listChatflowVersions
+      x-contract-scope: current
+      summary: 查看对话流的历史版本
+      description: 返回发布过的版本列表与基础元数据。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChatflowVersion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/chatflows/{chatflowId}/preview:
+    parameters:
+      - $ref: '#/components/parameters/ChatflowId'
+    post:
+      operationId: previewChatflow
+      x-contract-scope: current
+      summary: 预览对话流响应
+      description: 以草稿配置触发模型，返回模拟响应和调试信息。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inputs, message]
+              properties:
+                inputs:
+                  type: object
+                  description: 表单输入的键值对。
+                message:
+                  type: string
+                locale:
+                  type: string
+                  description: 预览时使用的语言环境。
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          responsePreview:
+                            type: string
+                            description: 预览文本内容。
+                          tokensEstimated:
+                            type: integer
+                          latencyMs:
+                            type: integer
+                          prompt:
+                            $ref: '#/components/schemas/ChatPromptConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/chatflows/{chatflowId}/instructions:
+    parameters:
+      - $ref: '#/components/parameters/ChatflowId'
+    get:
+      operationId: listChatflowInstructions
+      x-contract-scope: current
+      summary: 获取对话流关联的指令模板
+      description: 列出当前对话流引用的系统、团队与个人指令模板。
+      tags:
+        - Chatflow Instructions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChatflowInstructionRef'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: updateChatflowInstructions
+      x-contract-scope: current
+      summary: 更新对话流的指令模板列表
+      description: 用新的指令引用替换现有关联，支持系统、团队与个人模板组合。
+      tags:
+        - Chatflow Instructions
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instructions]
+              properties:
+                instructions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatflowInstructionRef'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChatflowInstructionRef'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/chatflows/{chatflowId}/variables:
+    parameters:
+      - $ref: '#/components/parameters/ChatflowId'
+    get:
+      operationId: getChatflowVariables
+      x-contract-scope: current
+      summary: 聚合对话流所需变量
+      description: 返回所有指令模板及输入渠道合并后的变量定义，供前端渲染动态表单。
+      tags:
+        - Chatflows
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AggregatedVariables'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  parameters:
+    ChatflowId:
+      name: chatflowId
+      in: path
+      required: true
+      description: 对话流唯一标识。
+      schema:
+        type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: Chatflow 接口通用响应包装。
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败时的错误信息。
+      required: [success]
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误描述。
+        details:
+          nullable: true
+          description: 附加调试信息。
+    ErrorResponse:
+      allOf:
+        - type: object
+          description: 统一错误响应格式。
+          properties:
+            success:
+              type: boolean
+              enum: [false]
+              description: 恒为 false。
+            error:
+              $ref: '#/components/schemas/ErrorInfo'
+              description: 错误详情。
+          required: [success, error]
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页条数。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否还有下一页。
+    ChatflowSummary:
+      type: object
+      required: [id, name, visibility, status]
+      description: 对话流列表项信息。
+      properties:
+        id:
+          type: string
+          description: 对话流 ID。
+        name:
+          type: string
+          description: 对话流名称。
+        description:
+          type: string
+          description: 简要描述。
+        visibility:
+          type: string
+          enum: [private, team, global]
+          description: 可见范围。
+        status:
+          type: string
+          enum: [draft, published, archived]
+          description: 当前状态。
+        latestVersion:
+          type: string
+          description: 最新版本号。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签集合。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最近更新时间。
+    ChatflowDetail:
+      allOf:
+        - $ref: '#/components/schemas/ChatflowSummary'
+        - type: object
+          required: [prompt, inputChannels, instructionIds]
+          description: 对话流详细配置。
+          properties:
+            prompt:
+              $ref: '#/components/schemas/ChatPromptConfig'
+              description: 模型提示词配置。
+            inputChannels:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChatflowInputChannel'
+              description: 输入渠道定义列表。
+            instructionIds:
+              type: array
+              items:
+                type: string
+              description: 关联的指令 ID。
+            owner:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [system, team, user]
+                  description: 所属类型。
+                id:
+                  type: string
+                  nullable: true
+                  description: 所属主体 ID。
+            publishing:
+              type: object
+              properties:
+                pendingChanges:
+                  type: boolean
+                  description: 是否存在未发布变更。
+                lastPublishedAt:
+                  type: string
+                  format: date-time
+                  description: 最近发布时间。
+    ChatPromptConfig:
+      type: object
+      required: [systemPrompt, temperature]
+      description: 模型提示词与生成控制参数。
+      properties:
+        systemPrompt:
+          type: string
+          description: 模型系统提示词，可包含指令变量。
+        tone:
+          type: string
+          description: 语气建议，例如 friendly、formal。
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 0.5
+          description: 采样温度，值越大输出越随机。
+        topP:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: nucleus sampling 概率阈值。
+        maxTokens:
+          type: integer
+          minimum: 1
+          description: 最大生成 token 数。
+    ChatflowInputChannel:
+      type: object
+      required: [type, required]
+      description: 对话流输入渠道配置。
+      properties:
+        type:
+          type: string
+          enum: [text, file, structured, voice]
+          description: 渠道类型。
+        required:
+          type: boolean
+          description: 是否必填。
+        schema:
+          description: 对于 structured 类型，引用 JSON Schema。
+          oneOf:
+            - type: string
+              format: uri
+            - type: object
+        placeholders:
+          type: array
+          items:
+            type: string
+          description: 输入提示占位符。
+        maxFiles:
+          type: integer
+          description: 文件渠道支持的最大上传数。
+        accept:
+          type: array
+          items:
+            type: string
+          description: 允许的文件类型（MIME）。 
+    ChatflowInstructionRef:
+      type: object
+      required: [instructionId, visibility, ordering]
+      description: 对话流指令引用信息。
+      properties:
+        instructionId:
+          type: string
+          description: 指令模板 ID。
+        visibility:
+          type: string
+          enum: [system, team, personal]
+          description: 指令来源可见性。
+        ordering:
+          type: integer
+          description: 指令执行顺序。
+        pinned:
+          type: boolean
+          default: false
+          description: 是否置顶固定。
+        metadata:
+          type: object
+          description: 可扩展字段，例如是否允许编辑本地副本。
+          additionalProperties: true
+        instruction:
+          $ref: './schemas/instruction.schema.json'
+          description: 指令模板详情。
+    CreateChatflowRequest:
+      type: object
+      required: [name, prompt]
+      description: 创建对话流的请求体。
+      properties:
+        name:
+          type: string
+          description: 对话流名称。
+        description:
+          type: string
+          description: 简要描述。
+        cloneFrom:
+          type: string
+          description: 可选，基于既有 chatflow 复制。
+        visibility:
+          type: string
+          enum: [private, team, global]
+          default: private
+          description: 初始可见范围。
+        prompt:
+          $ref: '#/components/schemas/ChatPromptConfig'
+          description: 提示词配置。
+        inputChannels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatflowInputChannel'
+          description: 输入渠道列表。
+        instructionIds:
+          type: array
+          items:
+            type: string
+          description: 关联的指令 ID 列表。
+    UpdateChatflowRequest:
+      type: object
+      description: 更新对话流请求体。
+      properties:
+        name:
+          type: string
+          description: 新的名称。
+        description:
+          type: string
+          description: 新的描述。
+        visibility:
+          type: string
+          enum: [private, team, global]
+          description: 调整后的可见范围。
+        status:
+          type: string
+          enum: [draft, published, archived]
+          description: 更新后的状态。
+        prompt:
+          $ref: '#/components/schemas/ChatPromptConfig'
+          description: 更新后的提示词配置。
+        inputChannels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatflowInputChannel'
+          description: 更新后的输入渠道。
+        instructionIds:
+          type: array
+          items:
+            type: string
+          description: 更新后的指令列表。
+    ChatflowVersion:
+      type: object
+      required: [version, publishedAt, notes]
+      description: 对话流版本记录。
+      properties:
+        version:
+          type: string
+          description: 版本号。
+        notes:
+          type: string
+          description: 版本说明。
+        publishedAt:
+          type: string
+          format: date-time
+          description: 发布时间。
+        publishedBy:
+          type: string
+          description: 发布人。
+        diffSummary:
+          type: string
+          description: 与上一版本的差异概述。
+    AggregatedVariables:
+      type: object
+      description: 聚合后的变量定义。
+      properties:
+        instructions:
+          type: array
+          items:
+            $ref: './schemas/instruction.schema.json#/properties/variables/items'
+          description: 指令变量列表。
+        inputChannels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatflowInputChannel'
+          description: 输入渠道对应变量。
+security:
+  - BearerAuth: []

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/instruction.schema.json",
+  "title": "InstructionDefinition",
+  "description": "对话流指令模板的结构定义，用于系统、团队与个人自定义提示词的存储与发布。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "body", "visibility", "ownerType", "locale", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "唯一标识，使用 ulid 或 uuid。"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "在对话流中展示的指令标题。"
+    },
+    "body": {
+      "type": "string",
+      "description": "具体的提示词内容，支持 Markdown；可包含变量占位符（例如 {{customer_name}}）。"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": ["system", "team", "personal"],
+      "description": "可见范围：系统预置、团队共享或个人私有。"
+    },
+    "ownerType": {
+      "type": "string",
+      "enum": ["system", "team", "user"],
+      "description": "所属主体类型。"
+    },
+    "ownerId": {
+      "type": ["string", "null"],
+      "description": "所属主体标识；系统模板为 null，团队模板写入 teamId，个人模板写入 userId。"
+    },
+    "locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(?:-[A-Z]{2})?$",
+      "description": "语言与区域编码，例如 zh-CN、en-US。"
+    },
+    "category": {
+      "type": "string",
+      "description": "分类标签，例如 customer-support、legal-review。"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 40
+      },
+      "maxItems": 8
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "draft"],
+      "default": "draft"
+    },
+    "variables": {
+      "type": "array",
+      "description": "占位变量定义，供前端渲染表单提示。",
+      "items": {
+        "type": "object",
+        "required": ["key", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]+$"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "required": {
+            "type": "boolean",
+            "default": false
+          },
+          "type": {
+            "type": "string",
+            "enum": ["string", "number", "boolean", "select", "multi-select"],
+            "default": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "value": {
+                  "type": ["string", "number", "boolean"]
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "allowedRoles": {
+      "type": "array",
+      "description": "允许使用该指令的角色列表。",
+      "items": {
+        "type": "string",
+        "enum": ["owner", "admin", "member", "guest"]
+      }
+    },
+    "defaultParameters": {
+      "type": "object",
+      "description": "指令执行时默认注入的上下文变量。",
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "扩展信息（例如来源、最后编辑人）。",
+      "additionalProperties": true
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastPublishedAt": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

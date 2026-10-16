@@ -1,0 +1,509 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Utilities API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    工作台通用工具接口定义。
+
+    - 对应设计目标：8.a ~ 8.j
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §7
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Workspace Utilities」
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Utilities
+    description: 工作台杂项能力
+paths:
+  /api/utilities/cache/clear:
+    post:
+      operationId: clearUserCache
+      x-contract-scope: current
+      summary: 清理缓存
+      description: 清除与用户相关的本地缓存数据（会话草稿、最近文件等）。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: 已清理
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/export/data:
+    post:
+      operationId: exportUserData
+      x-contract-scope: current
+      summary: 导出个人数据
+      description: 根据 GDPR 要求，导出用户在系统中的所有数据。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format:
+                  type: string
+                  enum: [json, csv, zip]
+                maskSensitive:
+                  type: boolean
+                  default: true
+      responses:
+        '202':
+          description: 导出任务已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/export/data/{taskId}:
+    get:
+      operationId: getDataExportStatus
+      x-contract-scope: current
+      summary: 查询数据导出任务
+      description: 查询导出任务处理状态并返回可用的下载信息。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ExportStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/utilities/release-notes:
+    get:
+      operationId: getReleaseNotes
+      x-contract-scope: current
+      summary: 获取版本差异信息
+      description: 用于版本比较视图，按模块分组列出差异。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ReleaseNote'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/help-articles:
+    get:
+      operationId: listHelpArticles
+      x-contract-scope: current
+      summary: 获取帮助文档列表
+      description: 根据分类与语言筛选支持中心的帮助文章。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: locale
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/HelpArticle'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/preferences/layout:
+    get:
+      operationId: getLayoutPreference
+      x-contract-scope: current
+      summary: 获取工作区布局设置
+      description: 返回用户保存的工作区布局配置。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LayoutPreference'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: updateLayoutPreference
+      x-contract-scope: current
+      summary: 更新工作区布局设置
+      description: 保存更新后的工作区布局与面板排列。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayoutPreference'
+      responses:
+        '200':
+          description: 更新成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/preferences/visibility:
+    get:
+      operationId: getVisibilityPreference
+      x-contract-scope: current
+      summary: 获取可见性配置
+      description: 用于 D5 要求的 “Visibility” 维度。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VisibilityPreference'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      operationId: updateVisibilityPreference
+      x-contract-scope: current
+      summary: 更新可见性配置
+      description: 更新各模块的可见性偏好设置。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisibilityPreference'
+      responses:
+        '200':
+          description: 更新成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/theme:
+    put:
+      operationId: updateTheme
+      x-contract-scope: current
+      summary: 切换主题
+      description: 修改用户在工作台中的主题偏好。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [theme]
+              properties:
+                theme:
+                  type: string
+                  enum: [light, dark, system]
+      responses:
+        '204':
+          description: 已更新
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/utilities/tooltips:
+    get:
+      operationId: getTooltipSettings
+      x-contract-scope: current
+      summary: 获取气泡提示配置
+      description: 获取用户个性化的气泡提示开启状态。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TooltipSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      operationId: updateTooltipSettings
+      x-contract-scope: current
+      summary: 更新气泡提示配置
+      description: 保存用户对气泡提示的显示与关闭调整。
+      tags:
+        - Utilities
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TooltipSettings'
+      responses:
+        '200':
+          description: 更新成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: 通用工具接口响应包装。
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        data:
+          nullable: true
+          description: 成功时返回的数据。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败时的错误信息。
+    ErrorResponse:
+      type: object
+      description: 工具接口统一错误结构。
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: 恒为 false。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 错误详情。
+      required: [success, error]
+    ErrorInfo:
+      type: object
+      description: 错误信息描述。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误说明。
+        details:
+          nullable: true
+          description: 可选的调试信息。
+    ExportStatus:
+      type: object
+      description: 数据导出任务状态。
+      properties:
+        taskId:
+          type: string
+          description: 任务 ID。
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+          description: 当前状态。
+        downloadUrl:
+          type: string
+          description: 完成时提供的下载链接。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 下载链接过期时间。
+    ReleaseNote:
+      type: object
+      description: 版本差异记录。
+      properties:
+        module:
+          type: string
+          description: 功能模块。
+        summary:
+          type: string
+          description: 摘要。
+        changes:
+          type: array
+          items:
+            type: string
+          description: 变更列表。
+        breaking:
+          type: boolean
+          description: 是否存在重大变更。
+    HelpArticle:
+      type: object
+      description: 帮助文档条目。
+      properties:
+        articleId:
+          type: string
+          description: 文档 ID。
+        title:
+          type: string
+          description: 标题。
+        url:
+          type: string
+          description: 访问链接。
+        locale:
+          type: string
+          description: 语言。
+        category:
+          type: string
+          description: 分类。
+    LayoutPreference:
+      type: object
+      description: 布局偏好设置。
+      properties:
+        sidebarCollapsed:
+          type: boolean
+          description: 侧边栏是否折叠。
+        panels:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 面板标识。
+              position:
+                type: string
+                enum: [left, right, bottom]
+                description: 面板位置。
+              size:
+                type: number
+                description: 面板尺寸。
+          description: 面板布局配置列表。
+        density:
+          type: string
+          enum: [comfortable, compact]
+          description: 布局密度。
+    VisibilityPreference:
+      type: object
+      description: 模块可见性偏好。
+      properties:
+        modules:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 模块 ID。
+              visible:
+                type: boolean
+                description: 是否显示。
+              owner:
+                type: string
+                description: 拥有者。
+          description: 模块可见性设置集合。
+    TooltipSettings:
+      type: object
+      description: 气泡提示配置。
+      properties:
+        enabled:
+          type: boolean
+          description: 是否启用气泡提示。
+        dismissedIds:
+          type: array
+          items:
+            type: string
+          description: 已关闭提示的 ID 列表。
+        locale:
+          type: string
+          description: 语言环境。
+security:
+  - BearerAuth: []

@@ -1,0 +1,727 @@
+openapi: 3.1.0
+x-contract-scope: target-state
+info:
+  title: Projects API
+  version: '0.1.0-draft'
+  contact:
+    name: Workspace Development Team
+    email: dev@workspace.example.com
+    url: https://api.example.com/support
+  description: |
+    项目管理接口定义。
+
+    - 对应设计目标：5.a ~ 5.d
+    - 功能映射：FRONTEND-FUNCTIONALITY-MAPPING §4
+    - 设计校验：FRONTEND-DESIGN-VALIDATION-REPORT 表格「Project Center」
+servers:
+  - url: https://api.example.com
+    description: 生产环境
+  - url: https://sandbox.example.com
+    description: 沙箱环境
+tags:
+  - name: Projects
+    description: 项目的创建、更新与归档
+  - name: Project Links
+    description: 项目与工作流/会话的关联管理
+paths:
+  /api/projects:
+    get:
+      operationId: getProjects
+      x-contract-scope: current
+      summary: 获取项目列表
+      description: 支持按状态、所有者、关键字过滤的分页查询项目。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, archived]
+        - name: owner
+          in: query
+          schema:
+            type: string
+            description: 过滤特定负责人。
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ProjectSummary'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createProject
+      x-contract-scope: current
+      summary: 创建项目
+      description: 新建项目并初始化默认配置与权限设置。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/projects/{projectId}:
+    parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getProjectDetail
+      x-contract-scope: current
+      summary: 获取项目详情
+      description: 返回项目基础属性、关联统计与可用操作权限。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateProject
+      x-contract-scope: current
+      summary: 更新项目信息
+      description: 支持修改标题、标签、负责人、业务自定义字段等。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteProject
+      x-contract-scope: current
+      summary: 删除或归档项目
+      description: 默认执行软删除，可通过查询参数 `force=true` 进行强制删除。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: force
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: 已处理
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/projects/{projectId}/summary:
+    get:
+      operationId: getProjectSummary
+      x-contract-scope: current
+      summary: 获取项目运行摘要
+      description: 汇总工作流执行数、对话数量、最新更新与关键指标。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectSummaryMetrics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/projects/{projectId}/workflows:
+    get:
+      operationId: listProjectWorkflows
+      x-contract-scope: current
+      summary: 获取项目关联的工作流执行记录
+      description: 分页列出与项目相关的工作流执行任务及其状态。
+      tags:
+        - Project Links
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/LinkedWorkflowExecution'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/projects/{projectId}/conversations:
+    get:
+      operationId: listProjectConversations
+      x-contract-scope: current
+      summary: 获取项目关联的对话列表
+      description: 分页返回项目下的对话记录及最新活动时间。
+      tags:
+        - Project Links
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/LinkedConversation'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/projects/{projectId}/attachments:
+    get:
+      operationId: listProjectAttachments
+      x-contract-scope: current
+      summary: 获取项目附件
+      description: 列出项目上传的文档、报告与媒体资源。
+      tags:
+        - Project Links
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectAttachment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/projects/{projectId}/export:
+    post:
+      operationId: exportProject
+      x-contract-scope: current
+      summary: 导出项目
+      description: 生成包含全部执行记录、会话与附件的压缩包，返回导出任务 ID。
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format:
+                  type: string
+                  enum: [zip, json]
+                includePrivateNotes:
+                  type: boolean
+                  default: false
+      responses:
+        '202':
+          description: 导出任务排队中
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ExportTicket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      description: 项目服务通用响应。
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功。
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+          description: 失败信息。
+    ErrorInfo:
+      type: object
+      description: 错误详情结构。
+      properties:
+        code:
+          type: string
+          description: 错误码。
+        message:
+          type: string
+          description: 错误说明。
+        details:
+          nullable: true
+          description: 附加调试信息。
+    ErrorResponse:
+      allOf:
+        - type: object
+          required: [success, error]
+          properties:
+            success:
+              type: boolean
+              enum: [false]
+              description: 恒为 false。
+            error:
+              $ref: '#/components/schemas/ErrorInfo'
+              description: 错误详情。
+    Pagination:
+      type: object
+      description: 分页信息。
+      properties:
+        page:
+          type: integer
+          description: 当前页码。
+        pageSize:
+          type: integer
+          description: 每页数量。
+        total:
+          type: integer
+          description: 总记录数。
+        hasMore:
+          type: boolean
+          description: 是否还有下一页。
+    ProjectSummary:
+      type: object
+      required: [id, name, status]
+      description: 项目基本信息摘要。
+      properties:
+        id:
+          type: string
+          description: 项目标识。
+        name:
+          type: string
+          description: 项目名称。
+        status:
+          type: string
+          enum: [active, archived]
+          description: 项目状态。
+        owner:
+          type: string
+          description: 负责人账号。
+        visibility:
+          type: string
+          enum: [private, team, organization]
+          description: 可见范围。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签集合。
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最近更新时间。
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间。
+    ProjectDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProjectSummary'
+        - type: object
+          description: 项目详细信息。
+          properties:
+            description:
+              type: string
+              description: 项目描述。
+            businessUnit:
+              type: string
+              description: 业务归属。
+            members:
+              type: array
+              items:
+                type: object
+                required: [userId, role]
+                properties:
+                  userId:
+                    type: string
+                    description: 成员 ID。
+                  role:
+                    type: string
+                    enum: [owner, editor, viewer]
+                    description: 成员角色。
+                  joinedAt:
+                    type: string
+                    format: date-time
+                    description: 加入时间。
+            customFields:
+              type: object
+              additionalProperties: true
+              description: 自定义字段集合。
+            accessPolicy:
+              type: object
+              properties:
+                allowGuest:
+                  type: boolean
+                  default: false
+                  description: 是否允许访客访问。
+                auditTrail:
+                  type: boolean
+                  default: true
+                  description: 是否记录审计日志。
+    ProjectSummaryMetrics:
+      type: object
+      description: 项目运行指标。
+      properties:
+        workflowExecutions:
+          type: integer
+          description: 工作流执行次数。
+        conversations:
+          type: integer
+          description: 关联会话数量。
+        lastActivityAt:
+          type: string
+          format: date-time
+          description: 最近活动时间。
+        completionRate:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: 完成率 (0-1)。
+        budgetUsage:
+          type: number
+          description: 预算使用比例。
+    LinkedWorkflowExecution:
+      type: object
+      description: 项目关联的工作流执行记录。
+      properties:
+        executionId:
+          type: string
+          description: 执行 ID。
+        workflowId:
+          type: string
+          description: 工作流 ID。
+        workflowName:
+          type: string
+          description: 工作流名称。
+        status:
+          type: string
+          description: 执行状态。
+        triggeredAt:
+          type: string
+          format: date-time
+          description: 触发时间。
+        summary:
+          type: string
+          description: 执行摘要。
+    LinkedConversation:
+      type: object
+      description: 项目关联的会话信息。
+      properties:
+        conversationId:
+          type: string
+          description: 会话 ID。
+        title:
+          type: string
+          description: 会话标题。
+        lastMessageAt:
+          type: string
+          format: date-time
+          description: 最近消息时间。
+        summary:
+          type: string
+          description: 会话摘要。
+    ProjectAttachment:
+      type: object
+      description: 项目附件信息。
+      properties:
+        fileId:
+          type: string
+          description: 文件 ID。
+        fileName:
+          type: string
+          description: 文件名。
+        size:
+          type: integer
+          description: 文件大小，单位字节。
+        mimeType:
+          type: string
+          description: MIME 类型。
+        downloadUrl:
+          type: string
+          description: 下载地址。
+    CreateProjectRequest:
+      type: object
+      required: [name]
+      description: 创建项目请求体。
+      properties:
+        name:
+          type: string
+          description: 项目名称。
+        description:
+          type: string
+          description: 项目描述。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签列表。
+        visibility:
+          type: string
+          enum: [private, team, organization]
+          default: team
+          description: 可见性设定。
+        owner:
+          type: string
+          description: 指定负责人。
+        customFields:
+          type: object
+          additionalProperties: true
+          description: 自定义字段集合。
+    UpdateProjectRequest:
+      type: object
+      description: 更新项目请求体。
+      properties:
+        name:
+          type: string
+          description: 新的项目名称。
+        description:
+          type: string
+          description: 新的描述。
+        status:
+          type: string
+          enum: [active, archived]
+          description: 更新后的状态。
+        tags:
+          type: array
+          items:
+            type: string
+          description: 标签列表。
+        owner:
+          type: string
+          description: 新负责人。
+        visibility:
+          type: string
+          description: 调整后的可见范围。
+          enum: [private, team, organization]
+        customFields:
+          type: object
+          additionalProperties: true
+          description: 自定义字段集合。
+    ExportTicket:
+      type: object
+      description: 导出任务票据。
+      required: [taskId, status]
+      properties:
+        taskId:
+          type: string
+          description: 任务 ID。
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+          description: 任务状态。
+        downloadUrl:
+          type: string
+          description: 任务完成时返回的短期下载地址。
+        expiresAt:
+          type: string
+          format: date-time
+          description: 下载链接过期时间。
+security:
+  - BearerAuth: []

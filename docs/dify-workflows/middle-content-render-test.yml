@@ -1,0 +1,243 @@
+app:
+  description: 用于测试绿洲前端中栏对公式、表格、Mermaid 图表、代码块等特殊内容的渲染能力。该工作流不调用模型，只输出固定 Markdown。
+  icon: 🧪
+  icon_background: '#E0F2FE'
+  mode: workflow
+  name: 中栏特殊内容渲染测试
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+      - data:
+          isInIteration: false
+          isInLoop: false
+          sourceType: start
+          targetType: code
+        id: start_middle_content_render_test-source-code_build_render_payload-target
+        source: start_middle_content_render_test
+        sourceHandle: source
+        target: code_build_render_payload
+        targetHandle: target
+        type: custom
+        zIndex: 0
+      - data:
+          isInIteration: false
+          isInLoop: false
+          sourceType: code
+          targetType: end
+        id: code_build_render_payload-source-end_return_answer_text-target
+        source: code_build_render_payload
+        sourceHandle: source
+        target: end_return_answer_text
+        targetHandle: target
+        type: custom
+        zIndex: 0
+    nodes:
+      - data:
+          desc: 可选输入，仅用于在 Dify 运行面板中标记测试批次，不影响固定输出内容。
+          selected: false
+          title: 开始
+          type: start
+          variables:
+            - label: 测试批次备注
+              max_length: 200
+              options: []
+              required: false
+              type: text-input
+              variable: run_label
+        height: 116
+        id: start_middle_content_render_test
+        position:
+          x: 100
+          y: 260
+        positionAbsolute:
+          x: 100
+          y: 260
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          code: |
+            def main(run_label: str = "") -> dict:
+                label = run_label.strip() if isinstance(run_label, str) and run_label.strip() else "默认测试批次"
+
+                answer_text = f"""# 中栏特殊内容渲染测试
+
+            > 测试批次：{label}
+            > 目的：确认前端中栏能稳定处理公式、表格、图表、代码块、引用、任务清单、长内容等非纯文字内容。
+
+            ## 1. 普通 Markdown 层级
+
+            这是一级标题下的正文。下面包含二级标题、三级标题、列表、加粗、斜体和链接。
+
+            ### 1.1 基础样式
+
+            - **加粗文本**：用于确认重点信息是否清晰。
+            - *斜体文本*：用于确认基础 Markdown 样式。
+            - `行内代码`：用于确认行内代码不会被误渲染。
+            - 链接示例：[Dify](https://dify.ai)
+
+            ## 2. 数学公式
+
+            行内公式：\\(E=mc^2\\)，二次方程求根公式：\\(x=\\frac{{-b\\pm\\sqrt{{b^2-4ac}}}}{{2a}}\\)。
+
+            块级公式：
+
+            \\[
+            \\int_0^1 x^2 \\, dx = \\frac{{1}}{{3}}
+            \\]
+
+            长公式，用于确认横向滚动或换行表现：
+
+            \\[
+            F(s)=\\int_0^\\infty e^{{-st}} f(t)\\,dt = \\lim_{{n\\to\\infty}}\\sum_{{k=0}}^n e^{{-s k\\Delta t}} f(k\\Delta t)\\Delta t
+            \\]
+
+            ## 3. Markdown 表格
+
+            | 测试项 | 期望表现 | 人工检查点 |
+            | --- | --- | --- |
+            | 标题 | 层级清楚 | H1/H2/H3 是否有明显区分 |
+            | 表格 | 不撑破中栏 | 横向内容是否可读 |
+            | 公式 | 正常排版 | 行内与块级公式是否显示为数学样式 |
+            | 图表 | Mermaid 正常渲染 | 是否出现流程图而不是源码 |
+            | 代码块 | 保留格式 | 缩进和换行是否正确 |
+
+            长表格，用于测试横向空间：
+
+            | 编号 | 字段 A | 字段 B | 字段 C | 字段 D | 字段 E | 字段 F |
+            | --- | --- | --- | --- | --- | --- | --- |
+            | 1 | Alpha-001 | Beta-001 | Gamma-001 | Delta-001 | Epsilon-001 | Zeta-001 |
+            | 2 | Alpha-002 | Beta-002 | Gamma-002 | Delta-002 | Epsilon-002 | Zeta-002 |
+            | 3 | Alpha-003 | Beta-003 | Gamma-003 | Delta-003 | Epsilon-003 | Zeta-003 |
+
+            ## 4. Mermaid 图表
+
+            ```mermaid
+            flowchart TD
+              A[开始测试] --> B[输出固定 Markdown]
+              B --> C{{中栏 ContentRenderer}}
+              C --> D[公式渲染]
+              C --> E[表格渲染]
+              C --> F[Mermaid 图表渲染]
+              D --> G[人工确认显示正常]
+              E --> G
+              F --> G
+            ```
+
+            ## 5. 代码块
+
+            ```python
+            def render_check(items: list[str]) -> dict:
+                return {{
+                    "status": "ok",
+                    "checked_items": items,
+                }}
+            ```
+
+            代码块里的公式边界应保持原样，不应该被当作公式渲染：
+
+            ```md
+            \\(这里是代码块里的公式边界，不应该渲染成公式\\)
+            \\[
+            a^2 + b^2 = c^2
+            \\]
+            ```
+
+            ## 6. 引用块和任务清单
+
+            > 这是一段引用内容。它用于确认引用块的背景、边框和间距是否正常。
+
+            - [x] 公式显示
+            - [x] 表格显示
+            - [x] Mermaid 图表显示
+            - [x] 代码块显示
+            - [ ] 请人工检查中栏是否有横向撑破或滚动异常
+
+            ## 7. 图片链接
+
+            ![内置 base64 测试图片](data:image/png;base64,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)
+
+            ## 8. 结束标记
+
+            如果你能看到本段文字，说明固定内容已完整输出。
+            """
+
+                return {
+                    "answer_text": answer_text.strip(),
+                }
+          code_language: python3
+          desc: 固定生成中栏特殊内容测试 Markdown，不调用模型或外部服务。
+          outputs:
+            answer_text:
+              type: string
+          selected: false
+          title: 生成固定测试内容
+          type: code
+          variables:
+            - value_selector:
+                - start_middle_content_render_test
+                - run_label
+              variable: run_label
+        height: 116
+        id: code_build_render_payload
+        position:
+          x: 420
+          y: 260
+        positionAbsolute:
+          x: 420
+          y: 260
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          desc: 返回 answer_text，供前端中栏按生成结果渲染。
+          outputs:
+            - value_selector:
+                - code_build_render_payload
+                - answer_text
+              value_type: string
+              variable: answer_text
+          selected: false
+          title: 输出
+          type: end
+        height: 90
+        id: end_return_answer_text
+        position:
+          x: 740
+          y: 260
+        positionAbsolute:
+          x: 740
+          y: 260
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+  rag_pipeline_variables: []
